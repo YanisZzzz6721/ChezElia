@@ -1,5 +1,6 @@
 import { HOURS_NOTE, OPENING_HOURS } from "@/content/hours";
 import { formatDayHours } from "@/lib/hours";
+import { staggerStyle } from "@/lib/motion";
 import { ActionButtons } from "./ActionButtons";
 import { Address } from "./Address";
 
@@ -11,7 +12,7 @@ import { Address } from "./Address";
  */
 function HoursTicket() {
   return (
-    <div className="p-tk">
+    <div className="p-tk" data-reveal>
       <span className="b-hours__tube" aria-hidden="true" />
       <div className="b-ticket">
         <div className="b-ticket__paper">
@@ -38,7 +39,7 @@ export function VisitSection() {
     <section className="p-visit" id="horaires" aria-labelledby="b-h-hor">
       <div className="p-visit__in">
         <HoursTicket />
-        <div className="p-visit__side">
+        <div className="p-visit__side" data-reveal style={staggerStyle(2)}>
           <h2 className="p-visit__h">Venir <span>au magasin</span></h2>
           <Address />
           <ActionButtons />

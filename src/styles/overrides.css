@@ -42,7 +42,7 @@
   position:relative;
   translate:var(--t) var(--t);
   box-shadow:var(--o) var(--o) 0 var(--sc),var(--g);
-  transition:translate .32s cubic-bezier(.34,1.56,.64,1),box-shadow .24s cubic-bezier(.2,.8,.2,1),background-color .15s ease;
+  transition:translate .55s var(--spring),box-shadow .24s cubic-bezier(.2,.8,.2,1),background-color .15s ease;
   touch-action:manipulation;
   -webkit-tap-highlight-color:transparent;
   user-select:none;
@@ -70,4 +70,64 @@
 
 @media (prefers-reduced-motion:reduce){
   .b-btn:not([disabled]),.b-links__cta,.b-tab{transition:none;will-change:auto}
+}
+
+
+/* ═════════ Mouvement « premium » ═════════
+   Un seul ressort (sous-amorti, ~9 % de dépassement) pour tout le site : même sensation partout.
+   On n'anime que opacity, translate, scale et box-shadow (pas de layout) ; les rotations des cartes
+   restent portées par `transform`, d'où l'usage des propriétés individuelles translate / scale. */
+:root{
+  --spring:cubic-bezier(.34,1.4,.64,1);
+  --ease-out:cubic-bezier(.2,.8,.2,1);
+}
+@supports (transition-timing-function:linear(0,1)){
+  :root{
+    --spring:linear(0, 0.033, 0.119, 0.236, 0.369, 0.505, 0.634, 0.75, 0.85, 0.931, 0.994, 1.039, 1.07, 1.087, 1.094, 1.093, 1.087, 1.077, 1.064, 1.051, 1.039, 1.027, 1.017, 1.009, 1.003, 0.998, 0.994, 0.992, 0.991, 0.991, 0.992, 0.992, 0.993, 0.995, 0.996, 0.997, 1);
+  }
+}
+
+/* défilement lissé (Lenis) */
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto !important}
+.lenis.lenis-stopped{overflow:hidden}
+
+/* ── Premier écran : entrée en cascade au chargement (CSS seul, visible même sans JavaScript) ── */
+@keyframes hero-in{from{opacity:0;translate:0 38px;scale:.97}}
+@keyframes hero-drop{from{opacity:0;translate:0 -22px}}
+@keyframes photo-in{from{opacity:0;translate:0 64px;scale:.93}}
+.p-hero .b-nav{animation:hero-drop .6s var(--ease-out) backwards}
+.p-hero .b-h1 .b-l{animation:hero-in .8s var(--spring) backwards}
+.p-hero .b-h1 .b-l:nth-child(1){animation-delay:.04s}
+.p-hero .b-h1 .b-l:nth-child(2){animation-delay:.11s}
+.p-hero .b-h1 .b-l:nth-child(3){animation-delay:.18s}
+.p-hero .b-lead{animation:hero-in .8s var(--spring) .26s backwards}
+.p-hero .b-actions{animation:hero-in .8s var(--spring) .34s backwards}
+.p-hero .b-addr{animation:hero-in .8s var(--spring) .42s backwards}
+.p-hero .p-photo{animation:photo-in .9s var(--spring) .12s backwards}
+.p-hero .b-tape{animation:hero-in .9s var(--spring) .5s backwards}
+
+/* ── Néon : les tubes « s'allument » (scintillement) puis restent vivants (pulsation déjà en place) ── */
+.p5-stage .b-frame,.p5-stage .p5-tube,.p-stks .b-frame{animation:bn-on 1.4s linear .7s backwards}
+
+/* ── Apparition au scroll (activée seulement si JavaScript tourne et que les animations sont permises) ── */
+@keyframes rv-up{from{opacity:0;translate:0 52px;scale:.94}}
+[data-anim="on"] [data-reveal]:not(.is-in){opacity:0}
+[data-anim="on"] [data-reveal].is-in{animation:rv-up .9s var(--spring) calc(var(--i,0) * 80ms) backwards}
+[data-anim="on"] [data-reveal="neon"].is-in{animation:bn-on 1.4s linear backwards}
+[data-anim="on"] .p-tk.is-in .b-hours__tube{animation:bn-on 1.4s linear .5s backwards}
+
+/* ── Cartes produit : se soulèvent au survol avec le ressort ── */
+.b-card{transition:transform .6s var(--spring),box-shadow .3s var(--ease-out)}
+.b-card:hover{transform:rotate(0) translateY(-7px)}
+.b-card__pic img{transition:scale .6s var(--spring)}
+.b-card:hover .b-card__pic img{scale:1.07}
+
+/* ── Changement d'onglet : les fiches glissent vers leur nouvelle place (View Transitions) ── */
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+::view-transition-group(*){animation-duration:.75s;animation-timing-function:var(--spring)}
+::view-transition-old(*),::view-transition-new(*){animation-duration:.3s;animation-timing-function:var(--ease-out)}
+
+@media (prefers-reduced-motion:reduce){
+  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none}
 }

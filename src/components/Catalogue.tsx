@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { CATEGORIES, PRODUCTS } from "@/content/products";
 import { ALL_CATEGORIES_ID, filterProducts } from "@/lib/catalogue";
+import { staggerStyle } from "@/lib/motion";
+import { runWithViewTransition } from "@/lib/viewTransition";
 import { NeonShape } from "./NeonShape";
 import { ProductCard } from "./ProductCard";
 
@@ -15,7 +17,7 @@ import { ProductCard } from "./ProductCard";
 function CategoryTabs({ selectedId, onSelect }: { selectedId: string; onSelect: (id: string) => void }) {
   const tabs = [{ id: ALL_CATEGORIES_ID, label: "Tout" }, ...CATEGORIES];
   return (
-    <div className="b-tabs" role="group" aria-label="Catégories">
+    <div className="b-tabs" role="group" aria-label="Catégories" data-reveal style={staggerStyle(2)}>
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -39,26 +41,36 @@ function CategoryTabs({ selectedId, onSelect }: { selectedId: string; onSelect: 
  */
 export function Catalogue() {
   const [selectedId, setSelectedId] = useState(ALL_CATEGORIES_ID);
+  // Les fiches n'apparaissent « au scroll » qu'au premier affichage ; ensuite la transition de vue prend le relais.
+  const [hasChangedCategory, setHasChangedCategory] = useState(false);
   const visibleProducts = filterProducts(PRODUCTS, selectedId);
+
+  const selectCategory = (categoryId: string) => {
+    if (categoryId === selectedId) return;
+    runWithViewTransition(() => {
+      setHasChangedCategory(true);
+      setSelectedId(categoryId);
+    });
+  };
 
   return (
     <section className="b-cat" id="catalogue">
-      <div className="b-neon b-neon--cat" aria-hidden="true">
+      <div className="b-neon b-neon--cat" aria-hidden="true" data-reveal="neon">
         <NeonShape kind="bolt" color="y" className="bnc-bolt" />
         <NeonShape kind="moon" color="v" className="bnc-moon" />
         <NeonShape kind="spark" color="y" className="bnc-spark" />
         <NeonShape kind="spark" color="v" className="bnc-spark2" />
       </div>
       <div className="b-wrap">
-        <h2 className="b-h2">Le <span>catalogue</span></h2>
-        <p className="b-intro">Tous les produits du magasin, par catégorie.</p>
-        <CategoryTabs selectedId={selectedId} onSelect={setSelectedId} />
+        <h2 className="b-h2" data-reveal>Le <span>catalogue</span></h2>
+        <p className="b-intro" data-reveal style={staggerStyle(1)}>Tous les produits du magasin, par catégorie.</p>
+        <CategoryTabs selectedId={selectedId} onSelect={selectCategory} />
         {visibleProducts.length === 0 ? (
           <p className="b-empty">Aucun produit dans cette catégorie pour l’instant.</p>
         ) : (
           <div className="b-grid">
-            {visibleProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {visibleProducts.map((product, index) => (
+              <ProductCard key={product.id} product={product} index={index} reveal={!hasChangedCategory} />
             ))}
           </div>
         )}
