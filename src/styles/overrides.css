@@ -1,0 +1,16 @@
+/* Ajouts propres au site (la maquette P5 reste intacte dans site.css). */
+
+/* Photo du magasin : cadre « Photo à venir » tant que les droits ne sont pas confirmés (Q12). */
+.p-photo__empty{display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:3/4;border:3px dashed rgba(18,5,31,.35);background:var(--b-paper-2);font:400 26px/1.1 var(--font-marker),cursive;color:#4a2c9a;text-align:center}
+
+/* Menu mobile : on garde aussi « Horaires » (la maquette ne laissait que « Catalogue »). */
+@media (max-width:640px){
+  .b-links a[href="#horaires"]{display:inline-flex}
+}
+
+/* Catalogue vide : message prévu plutôt qu'une grille cassée. */
+.b-empty{margin:40px 0 0;padding:24px;border:3px dashed var(--b-paper);font:800 16px var(--font-archivo),sans-serif;text-align:center}
+
+/* Pied de page */
+.s-foot{padding:40px 32px 120px;background:var(--b-ink);color:var(--b-lilac);text-align:center;font-size:14px}
+.s-foot a{color:var(--b-yellow)}
