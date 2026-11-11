@@ -10,10 +10,11 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     <>
       <header className="adm-header">
         <Link className="adm-brand" href="/admin/produits">Chez Elia · Admin</Link>
-        <AdminNav />
-        <form action={logoutAction}>
-          <button className="adm-logout" type="submit">Se déconnecter</button>
-        </form>
+        <AdminNav>
+          <form action={logoutAction}>
+            <button className="adm-logout" type="submit">Se déconnecter</button>
+          </form>
+        </AdminNav>
       </header>
       <main className="adm-main">{children}</main>
     </>
