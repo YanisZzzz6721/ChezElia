@@ -23,3 +23,51 @@
 .s-legal__back{display:inline-flex;align-items:center;min-height:44px;font-weight:800;text-decoration:underline}
 .s-foot{position:relative;z-index:2}
 .s-foot a{display:inline-flex;align-items:center;min-height:44px}
+
+/* ───────── Boutons « push » ─────────
+   Repos : le bouton est posé, son ombre dure dépasse de --d.
+   Survol : il se soulève (translate -3px) et l'ombre grandit, son bord extérieur reste fixé au « sol ».
+   Clic : il s'enfonce dans son ombre (translate +--tp, ombre à 0), puis remonte avec un léger ressort.
+   Seuls `translate` et `box-shadow` sont animés (pas de transform : les onglets gardent leur rotation). */
+.b-btn:not([disabled]),
+.b-links__cta,
+.b-tab{
+  --d:5px;            /* profondeur de l'ombre dure au repos */
+  --tp:var(--d);      /* enfoncement au clic */
+  --o:var(--d);       /* décalage courant de l'ombre */
+  --t:0px;            /* décalage courant du bouton */
+  --sc:var(--b-ink);  /* couleur de l'ombre dure */
+  --glow:0 0 0 0 transparent;
+  --g:var(--glow);    /* halo courant (repos ou survol) */
+  position:relative;
+  translate:var(--t) var(--t);
+  box-shadow:var(--o) var(--o) 0 var(--sc),var(--g);
+  transition:translate .32s cubic-bezier(.34,1.56,.64,1),box-shadow .24s cubic-bezier(.2,.8,.2,1),background-color .15s ease;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+  will-change:translate;
+}
+.b-btn:not([disabled]):hover{transform:none}
+
+/* variantes : couleur de l'ombre et halo néon conservés de la maquette */
+.b-btn--primary:not([disabled]),.b-links__cta{--glow:0 0 0 3px var(--bn-yc),0 0 16px 3px var(--bn-y),0 0 44px rgba(255,214,10,.5);--glow-hi:0 0 0 3px var(--bn-yc),0 0 22px 4px var(--bn-y),0 0 60px rgba(255,214,10,.65)}
+.b-btn--ghost:not([disabled]){--glow:0 0 0 3px var(--bn-vc),0 0 14px 3px var(--bn-v),0 0 38px rgba(165,107,255,.55);--glow-hi:0 0 0 3px var(--bn-vc),0 0 18px 4px var(--bn-v),0 0 48px rgba(165,107,255,.7)}
+.b-links__cta{--d:4px}
+.b-bar .b-btn:not([disabled]){--d:4px;--sc:var(--b-violet);--glow:0 0 0 0 transparent;--glow-hi:0 0 0 0 transparent}
+.b-tab{--d:0px;--tp:2px;--sc:var(--b-violet);--glow:0 0 6px var(--bn-v),0 0 20px rgba(165,107,255,.6),inset 0 0 10px rgba(165,107,255,.3);--glow-hi:0 0 8px var(--bn-v),0 0 26px rgba(165,107,255,.8),inset 0 0 12px rgba(165,107,255,.4)}
+.b-tab[aria-pressed="true"]{--d:5px;--glow:0 0 8px var(--bn-y),0 0 30px rgba(255,214,10,.7);--glow-hi:0 0 10px var(--bn-y),0 0 38px rgba(255,214,10,.85)}
+
+/* survol (souris seulement : pas de survol « collé » sur téléphone) */
+@media (hover:hover){
+  .b-btn:not([disabled]):hover,.b-links__cta:hover,.b-tab:hover{--t:-3px;--o:calc(var(--d) + 3px);--g:var(--glow-hi,var(--glow))}
+}
+/* clic / toucher : le bouton s'enfonce, enclenchement rapide */
+.b-btn:not([disabled]):active,.b-links__cta:active,.b-tab:active{
+  --t:var(--tp);--o:0px;
+  transition-duration:.07s,.07s,.15s;
+}
+
+@media (prefers-reduced-motion:reduce){
+  .b-btn:not([disabled]),.b-links__cta,.b-tab{transition:none;will-change:auto}
+}

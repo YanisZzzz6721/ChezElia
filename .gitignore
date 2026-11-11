@@ -42,3 +42,4 @@ next-env.d.ts
 
 # Images dérivées de photos dont les droits ne sont pas confirmés (Q12)
 maquettes/assets-private/
+AGENTS.md
