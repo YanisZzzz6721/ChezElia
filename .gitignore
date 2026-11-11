@@ -1,0 +1,44 @@
+# Secrets et configuration locale — ne jamais committer
+.env
+.env.*
+!.env.example
+*.local
+*.pem
+*.key
+
+# Dépendances et builds
+node_modules/
+.next/
+out/
+build/
+dist/
+coverage/
+
+# Hébergement
+.vercel/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Éditeurs et système
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Sauvegardes et exports de données (contiennent des données client)
+backups/
+*.sql.gz
+*.dump
+
+# Médias sources non destinés au dépôt public
+media-source/
+
+# Next.js
+next-env.d.ts
+*.tsbuildinfo
+
+# Images dérivées de photos dont les droits ne sont pas confirmés (Q12)
+maquettes/assets-private/
