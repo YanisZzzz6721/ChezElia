@@ -52,3 +52,20 @@ Avec cette version de la CLI Supabase, les commandes agissent sur le **local par
 3. Renseigner `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` dans Vercel.
 4. Créer le compte admin avec `scripts/create-admin.mjs` (clé service_role fournie dans le terminal seulement).
 5. Planifier une sauvegarde régulière : voir la page « Sauvegarde » de l'admin (export JSON) et activer les sauvegardes de la base côté Supabase si l'offre le permet. Les photos ne sont pas dans l'export JSON : leur sauvegarde se fait côté stockage.
+
+## Importer en masse des photos (une fiche masquée par photo)
+
+Pour démarrer le catalogue à partir d'un dossier de photos (par exemple celles du Drive) sans rien inventer :
+
+```bash
+# dossier-parent/Boisson/*.JPG  et  dossier-parent/Confiserie/*.JPG
+NEXT_PUBLIC_SUPABASE_URL=... NEXT_PUBLIC_SUPABASE_ANON_KEY=... ADMIN_EMAIL=... ADMIN_PASSWORD=... \
+node --experimental-strip-types scripts/import-photos.mjs <dossier-parent> --dry-run   # simulation
+node --experimental-strip-types scripts/import-photos.mjs <dossier-parent>             # import réel
+```
+
+- Chaque photo devient une fiche **masquée** (« À nommer · _DSF0621 »), catégorie selon le dossier, **« Prix à confirmer »**, sans description.
+- Les photos passent par le même traitement que l'admin : vrai format vérifié, 8 Mo max, WebP 1600 px, métadonnées retirées.
+- Le script agit avec le compte administrateur (aucune clé secrète) et se relance sans doublon.
+- Ensuite, dans l'admin : donner un titre et un prix à chaque fiche, puis la passer en « Afficher ».
+- ⚠️ Les photos importées sont stockées dans le bucket public (adresse devinable) : ne les importer qu'une fois les droits confirmés (Q12).

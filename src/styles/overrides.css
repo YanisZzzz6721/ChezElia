@@ -131,3 +131,19 @@ html.lenis,html.lenis body{height:auto}
 @media (prefers-reduced-motion:reduce){
   ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none}
 }
+
+/* ───────── Logo « autocollant » (lune violette, plaque jaune, lettres au feutre) ───────── */
+.lg-link{display:inline-flex;align-items:center;min-height:44px;text-decoration:none;color:inherit;-webkit-tap-highlight-color:transparent}
+.lg-sticker{position:relative;display:inline-flex;flex-direction:column;align-items:center;padding:16px 24px 28px;background:#ffd60a;color:#12051f;border:6px solid #fff;border-radius:22px 32px 24px 34px;transform:rotate(-4deg);filter:drop-shadow(5px 6px 0 rgba(18,5,31,.6)) drop-shadow(0 0 20px rgba(255,214,10,.6));transition:transform .6s var(--spring)}
+.lg-sticker__name{font:400 clamp(36px,9vw,48px)/1 var(--font-marker),cursive;white-space:nowrap}
+.lg-sticker__tape{position:absolute;left:50%;bottom:-17px;padding:4px 12px;background:#12051f;color:#ffd60a;border:3px solid #fff;font:400 16px/1 var(--font-anton),sans-serif;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;transform:translateX(-50%) rotate(2.2deg)}
+.lg-sticker .lg-sticker__moon{position:absolute;right:-22px;top:-26px;width:58px;height:58px;max-width:none;transform:rotate(14deg);filter:drop-shadow(3px 4px 0 rgba(18,5,31,.55))}
+.lg-sticker--s{padding:5px 12px;border-width:4px;border-radius:10px 14px 10px 14px;transform:rotate(-3deg);filter:drop-shadow(3px 4px 0 rgba(18,5,31,.6))}
+.lg-sticker--s .lg-sticker__name{font-size:26px}
+.lg-sticker--s .lg-sticker__moon{width:32px;height:32px;right:-13px;top:-15px}
+@media (hover:hover){.lg-link:hover .lg-sticker{transform:rotate(0deg) scale(1.05)}}
+.lg-link:active .lg-sticker{transform:rotate(-6deg) scale(.96);transition-duration:.08s}
+.lg-link:focus-visible{outline:3px solid var(--b-yellow);outline-offset:6px}
+.s-foot__logo{display:flex;justify-content:center;margin:0 0 34px;padding-top:14px}
+.b-nav .lg-link{margin-left:6px}
+@media (prefers-reduced-motion:reduce){.lg-sticker{transition:none}}
