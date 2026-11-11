@@ -34,6 +34,17 @@ ADMIN_EMAIL=admin@exemple.test ADMIN_PASSWORD='<12 caractères minimum>' node sc
 - La clé `service_role` n'est **jamais** dans l'application ni dans `.env.local` : uniquement dans le terminal, pour créer le compte.
 - Les photos sont revérifiées côté serveur (vrai format, 8 Mo, 200 px minimum), converties en WebP (1600 px maximum) et débarrassées de leurs métadonnées (GPS compris).
 
+## Tester avec le projet cloud depuis son PC
+
+Mettre l'URL et la clé publique du projet dans `.env.cloud.local` (ignoré par git), puis :
+
+```bash
+npm run dev:cloud   # http://localhost:3001, branché sur le cloud (le local reste sur :3000)
+```
+
+Avec cette version de la CLI Supabase, les commandes agissent sur le **local par défaut** : ajouter `--remote` pour viser le cloud
+(`npx supabase db push --remote --dry-run`, puis `npx supabase db push --remote`).
+
 ## Mise en production (Supabase cloud)
 
 1. Créer le projet Supabase (au nom du client), appliquer `supabase/migrations/` (`npx supabase link` puis `npx supabase db push`).

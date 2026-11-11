@@ -43,6 +43,8 @@ const SECURITY_HEADERS = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Permet de lancer en parallèle un second serveur de développement (ex. branché sur le cloud) sans conflit de verrou.
+  distDir: process.env.NEXT_DIST_DIR ?? ".next",
   // Les photos (8 Mo maximum, vérifiées côté serveur) transitent par les Server Actions : limite relevée au-delà du 1 Mo par défaut.
   experimental: { serverActions: { bodySizeLimit: "10mb" } },
   async headers() {
