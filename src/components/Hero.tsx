@@ -3,7 +3,7 @@ import { ActionButtons } from "./ActionButtons";
 import { CallButton } from "./CallButton";
 import { Address } from "./Address";
 import { NeonShape } from "./NeonShape";
-import { StorePhotoFrame } from "./StorePhotoFrame";
+import { StorePhotoFrame, type StorePhotoFrameProps } from "./StorePhotoFrame";
 
 const MAIN_NAV = [
   { href: "#catalogue", label: "Catalogue" },
@@ -32,7 +32,7 @@ function Header() {
   );
 }
 
-function PhotoStage() {
+function PhotoStage({ photo }: { photo: StorePhotoFrameProps["photo"] }) {
   return (
     <div className="p5-stage">
       <span className="p5-tube p5-tube--y" aria-hidden="true" />
@@ -41,7 +41,7 @@ function PhotoStage() {
       <NeonShape kind="moon" color="y" className="p5-moon" />
       <NeonShape kind="spark" color="v" className="p5-spark" />
       <NeonShape kind="spark" color="y" className="p5-spark2" />
-      <StorePhotoFrame />
+      <StorePhotoFrame photo={photo} />
     </div>
   );
 }
@@ -63,40 +63,47 @@ function CategoryTape() {
   );
 }
 
-/** Premier écran : accroche, boutons, photo du magasin (cadre « Photo à venir » pour l'instant). */
-export function Hero() {
+interface HeroProps {
+  tag: string;
+  lead: string;
+  phoneNumber: string | null;
+  photo: StorePhotoFrameProps["photo"];
+}
+
+/** Premier écran : accroche, boutons, photo d'accueil (cadre « Photo à venir » tant qu'aucune n'est publiée). */
+export function Hero({ tag, lead, phoneNumber, photo }: HeroProps) {
   return (
     <section className="b-hero p-hero" id="top">
       <Header />
       <div className="b-top p-top">
         <div className="b-copy">
-          <p className="b-tag">Ouvert tard · Centre-ville</p>
+          <p className="b-tag">{tag}</p>
           <h1 className="b-h1">
             <span className="b-l">Votre épicerie</span>{" "}
             <span className="b-l"><span className="b-hl">de nuit</span> à</span>{" "}
             <span className="b-l">Strasbourg</span>
           </h1>
-          <p className="b-lead">{SITE.lead}</p>
-          <ActionButtons />
+          <p className="b-lead">{lead}</p>
+          <ActionButtons phoneNumber={phoneNumber} />
           <Address />
         </div>
-        <PhotoStage />
+        <PhotoStage photo={photo} />
       </div>
       <span className="b-wire" aria-hidden="true" />
       <CategoryTape />
-      <MobileBar />
+      <MobileBar phoneNumber={phoneNumber} />
     </section>
   );
 }
 
 /** Barre fixe mobile : itinéraire et appel toujours accessibles. */
-function MobileBar() {
+function MobileBar({ phoneNumber }: { phoneNumber: string | null }) {
   return (
     <div className="b-bar">
       <a className="b-btn b-btn--primary" href={SITE.directionsUrl} target="_blank" rel="noopener noreferrer">
         <span className="b-btn__row">Venir au magasin</span>
       </a>
-      <CallButton showIcon={false} />
+      <CallButton phoneNumber={phoneNumber} showIcon={false} />
     </div>
   );
 }

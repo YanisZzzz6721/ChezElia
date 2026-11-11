@@ -1,5 +1,6 @@
 import type { DayHours } from "@/content/hours";
 import { SITE } from "@/content/site";
+import { toTelHref } from "./phone";
 
 const SCHEMA_DAY_NAMES: Record<string, string> = {
   Lundi: "Monday",
@@ -31,11 +32,11 @@ export function toSchemaTime(frenchTime: string): string {
 
 /**
  * Quoi : construit les données structurées schema.org du commerce (ConvenienceStore).
- * Input : openingHours — les horaires de la semaine (les jours fermés sont omis).
+ * Input : openingHours — les horaires de la semaine (les jours fermés sont omis) ; phoneNumber — numéro public ou null.
  * Output : l'objet JSON-LD. Téléphone, image et coordonnées sont omis tant qu'ils ne sont pas fournis.
  * Effets de bord : aucun (fonction pure). Lève une Error si un nom de jour ou une heure est invalide.
  */
-export function buildStoreJsonLd(openingHours: readonly DayHours[]) {
+export function buildStoreJsonLd(openingHours: readonly DayHours[], phoneNumber: string | null = null) {
   const openingHoursSpecification = openingHours
     .filter((hours) => !hours.isClosed)
     .map((hours) => {
@@ -53,6 +54,7 @@ export function buildStoreJsonLd(openingHours: readonly DayHours[]) {
     "@context": "https://schema.org",
     "@type": "ConvenienceStore",
     name: SITE.name,
+    ...(phoneNumber ? { telephone: toTelHref(phoneNumber).slice("tel:".length) } : {}),
     address: {
       "@type": "PostalAddress",
       streetAddress: "4 rue Sédillot",

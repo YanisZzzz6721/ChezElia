@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { OPENING_HOURS } from "@/content/hours";
 import { formatDayHours } from "./hours";
+import { SAMPLE_HOURS } from "./testFixtures";
 
 describe("formatDayHours", () => {
   it("affiche l'ouverture et la fermeture d'un jour ouvert", () => {
@@ -16,14 +16,14 @@ describe("formatDayHours", () => {
   });
 });
 
-describe("OPENING_HOURS", () => {
+describe("SAMPLE_HOURS", () => {
   it("couvre les 7 jours dans l'ordre, une seule fois chacun", () => {
-    expect(OPENING_HOURS.map((hours) => hours.day)).toEqual([
+    expect(SAMPLE_HOURS.map((hours) => hours.day)).toEqual([
       "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche",
     ]);
   });
 
   it("se met en forme sans erreur pour chaque jour", () => {
-    for (const hours of OPENING_HOURS) expect(() => formatDayHours(hours)).not.toThrow();
+    for (const hours of SAMPLE_HOURS) expect(() => formatDayHours(hours)).not.toThrow();
   });
 });

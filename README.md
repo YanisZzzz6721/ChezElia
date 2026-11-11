@@ -12,7 +12,9 @@ Site vitrine en Next.js (App Router, TypeScript). Direction visuelle « P5 » : 
 - `src/components/` — sections (Hero, VisitSection, Catalogue) et petits composants.
 - `src/content/` — textes, horaires, catalogue (données de démonstration).
 - `src/lib/` — fonctions pures testées (`formatPrice`).
-- `src/styles/` — CSS issu des maquettes.
+- `src/styles/` — CSS issu des maquettes et de l'admin.
+- `src/app/admin/` — panneau d'administration (voir `docs/admin.md`).
+- `supabase/` — migrations SQL, règles de sécurité (RLS) et données de démonstration locales.
 
 ## Lancer
 

@@ -3,7 +3,7 @@ import { ArrowIcon } from "./Icons";
 import { CallButton } from "./CallButton";
 
 /** Boutons « Venir au magasin » (itinéraire) et « Appeler » du premier écran et de la section horaires. */
-export function ActionButtons() {
+export function ActionButtons({ phoneNumber }: { phoneNumber: string | null }) {
   return (
     <div className="b-actions">
       <a className="b-btn b-btn--primary" href={SITE.directionsUrl} target="_blank" rel="noopener noreferrer">
@@ -12,7 +12,7 @@ export function ActionButtons() {
           <ArrowIcon />
         </span>
       </a>
-      <CallButton showIcon />
+      <CallButton phoneNumber={phoneNumber} showIcon />
     </div>
   );
 }

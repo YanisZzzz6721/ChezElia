@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { CSSProperties } from "react";
 import { formatPrice } from "@/lib/price";
 import { staggerStyle } from "@/lib/motion";
@@ -17,8 +18,7 @@ function ProductPicture({ product }: { product: Product }) {
   }
   return (
     <div className="b-card__pic">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={product.photo} alt={product.title} loading="lazy" />
+      <Image src={product.photo.url} width={product.photo.width} height={product.photo.height} alt={product.title} unoptimized />
     </div>
   );
 }

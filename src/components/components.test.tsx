@@ -8,14 +8,20 @@ const baseProduct: Product = { id: "x", title: "Produit test", categoryId: null,
 
 describe("CallButton", () => {
   it("affiche un bouton désactivé « numéro à venir » tant qu'aucun numéro n'est fourni", () => {
-    const html = renderToStaticMarkup(<CallButton showIcon />);
+    const html = renderToStaticMarkup(<CallButton phoneNumber={null} showIcon />);
     expect(html).toContain("disabled");
     expect(html).toContain("numéro à venir");
     expect(html).not.toContain("tel:");
   });
 
+  it("affiche un vrai lien tel: au format international quand le numéro est fourni", () => {
+    const html = renderToStaticMarkup(<CallButton phoneNumber="03 88 12 34 56" showIcon />);
+    expect(html).toContain('href="tel:+33388123456"');
+    expect(html).not.toContain("disabled");
+  });
+
   it("n'affiche pas l'icône quand showIcon est faux", () => {
-    expect(renderToStaticMarkup(<CallButton showIcon={false} />)).not.toContain("<svg");
+    expect(renderToStaticMarkup(<CallButton phoneNumber={null} showIcon={false} />)).not.toContain("<svg");
   });
 });
 

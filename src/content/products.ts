@@ -5,6 +5,12 @@ export interface Category {
   label: string;
 }
 
+export interface ProductPhoto {
+  url: string;
+  width: number;
+  height: number;
+}
+
 export interface Product {
   id: string;
   title: string;
@@ -12,33 +18,8 @@ export interface Product {
   categoryId: string | null;
   /** Courte description facultative — jamais générée, saisie avec le client. */
   description?: string;
-  /** Centimes. null = « Prix à confirmer ». */
+  /** Centimes. null = « Prix à confirmer » (≠ 0, qui est un vrai prix nul). */
   priceInCents: PriceInCents;
-  /** Chemin d'une photo dont les droits sont confirmés. Absent = « Photo à venir ». */
-  photo?: string;
+  /** Photo publiée. Absent = « Photo à venir ». */
+  photo?: ProductPhoto;
 }
-
-export const CATEGORIES: readonly Category[] = [
-  { id: "boissons", label: "Boissons" },
-  { id: "confiserie", label: "Confiserie" },
-];
-
-/**
- * DONNÉES DE DÉMONSTRATION — à remplacer par la saisie du vrai catalogue avec le client (phase 8).
- * Titres lus sur les emballages, sans prix ni description inventés.
- */
-export const PRODUCTS: readonly Product[] = [
-  { id: "coca-cola-cherry", title: "Coca-Cola Cherry", categoryId: "boissons", priceInCents: null },
-  { id: "fanta", title: "Fanta", categoryId: "boissons", priceInCents: null },
-  { id: "red-bull", title: "Red Bull", categoryId: "boissons", priceInCents: null },
-  { id: "pepsi", title: "Pepsi", categoryId: "boissons", priceInCents: null },
-  { id: "frosty-bites", title: "Frosty Bites", categoryId: "confiserie", priceInCents: null },
-  { id: "tetes-brulees-paint-billes", title: "Têtes Brûlées Paint Billes", categoryId: "confiserie", priceInCents: null },
-  {
-    id: "conik-sweet-waffle-cones",
-    title: "Conik Sweet Waffle Cones fourrés au chocolat au lait et à la crème pistache, édition Dubaï",
-    categoryId: "confiserie",
-    priceInCents: null,
-  },
-  { id: "couscous-samia-moyen", title: "Couscous Samia moyen", categoryId: null, priceInCents: null },
-];

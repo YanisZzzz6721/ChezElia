@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { DayHours } from "@/content/hours";
-import { OPENING_HOURS } from "@/content/hours";
 import { buildStoreJsonLd, serializeJsonLd, toSchemaTime } from "./structuredData";
+import { SAMPLE_HOURS } from "./testFixtures";
 
 describe("toSchemaTime", () => {
   it("convertit « 15h30 » en « 15:30 » et gère l'après-minuit", () => {
@@ -16,7 +16,7 @@ describe("toSchemaTime", () => {
 });
 
 describe("buildStoreJsonLd", () => {
-  const jsonLd = buildStoreJsonLd(OPENING_HOURS);
+  const jsonLd = buildStoreJsonLd(SAMPLE_HOURS);
 
   it("décrit un commerce de proximité avec l'adresse exacte du site", () => {
     expect(jsonLd["@type"]).toBe("ConvenienceStore");
@@ -29,6 +29,10 @@ describe("buildStoreJsonLd", () => {
     expect(jsonLd).not.toHaveProperty("telephone");
     expect(jsonLd).not.toHaveProperty("image");
     expect(jsonLd).not.toHaveProperty("geo");
+  });
+
+  it("ajoute le téléphone au format international quand il est fourni", () => {
+    expect(buildStoreJsonLd(SAMPLE_HOURS, "03 88 12 34 56")).toMatchObject({ telephone: "+33388123456" });
   });
 
   it("omet le jour fermé et garde 6 jours d'ouverture", () => {

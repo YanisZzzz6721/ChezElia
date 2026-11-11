@@ -1,0 +1,104 @@
+/* Administration Chez Elia — même identité que le site (violet, jaune, papier), lisible sur téléphone et ordinateur. */
+.adm{min-height:100vh;background:var(--b-ink);background-image:radial-gradient(rgba(122,61,240,.28) 1.3px,transparent 1.8px);background-size:16px 16px;color:#fff}
+.adm :where(a){color:inherit}
+.adm-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* en-tête et navigation */
+.adm-header{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding:10px 16px;background:var(--b-deep);border-bottom:3px solid var(--b-yellow)}
+.adm-brand{font:400 26px/1 var(--font-marker),cursive;color:var(--b-yellow);text-decoration:none;margin:0}
+.adm-nav{display:flex;flex-wrap:wrap;gap:4px;flex:1}
+.adm-nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 14px;font:800 14px var(--font-archivo),sans-serif;letter-spacing:.07em;text-transform:uppercase;text-decoration:none;border-radius:4px}
+.adm-nav a:hover{background:rgba(255,255,255,.12)}
+.adm-logout{min-height:44px;padding:0 14px;background:transparent;border:2px solid var(--b-lilac);border-radius:4px;color:var(--b-lilac);font:700 13px var(--font-archivo),sans-serif;cursor:pointer}
+.adm-logout:hover{background:rgba(255,255,255,.12)}
+.adm-main{max-width:980px;margin:0 auto;padding:28px 16px 80px}
+
+/* titres */
+.adm-h1{margin:0 0 18px;font:400 clamp(34px,6vw,52px)/1 var(--font-anton),sans-serif;text-transform:uppercase;color:#fff;text-shadow:3px 3px 0 var(--b-violet)}
+.adm-h2{margin:0 0 6px;font:400 26px/1.1 var(--font-anton),sans-serif;text-transform:uppercase;color:var(--b-ink)}
+.adm-titlebar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+
+/* cartes et formulaires (papier) */
+.adm-card{margin:0 0 24px;padding:22px 20px;background:var(--b-paper);color:var(--b-ink);border-radius:4px;box-shadow:6px 6px 0 var(--b-violet)}
+.adm-form{display:flex;flex-direction:column;gap:8px}
+.adm-label{margin-top:10px;font:800 12px var(--font-archivo),sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#4a2c9a}
+.adm-input{width:100%;min-height:48px;padding:10px 12px;border:3px solid var(--b-ink);border-radius:4px;background:#fff;color:var(--b-ink);font:500 16px var(--font-archivo),sans-serif}
+textarea.adm-input{resize:vertical;line-height:1.4}
+.adm-input--short{max-width:260px}
+.adm-input:focus-visible,.adm-form input[type=file]:focus-visible{outline:3px solid var(--b-yellow);outline-offset:2px}
+.adm-hint{margin:2px 0 0;font-size:14px;line-height:1.4;color:#4a3a66}
+.adm-main>.adm-hint{margin-bottom:18px;color:var(--b-lilac)}
+.adm-check{display:flex;align-items:center;gap:10px;min-height:44px;font:700 15px var(--font-archivo),sans-serif;cursor:pointer}
+.adm-check input{width:22px;height:22px;accent-color:var(--b-violet)}
+.adm-actions{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-top:14px}
+.adm-link{display:inline-flex;align-items:center;min-height:44px;font-weight:800;text-decoration:underline}
+.adm-inline{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.adm-inline .adm-input{flex:1 1 200px;width:auto}
+
+/* boutons : on garde le « push » du site, sans halo néon */
+.adm .b-btn:not([disabled]){--glow:0 0 0 0 transparent;--glow-hi:0 0 0 0 transparent}
+.adm .adm-btn{min-height:44px;padding:6px 16px;font-size:14px;gap:2px}
+.adm .adm-btn--danger{background:#ffd9d9;color:#7a0b0b;border-color:#7a0b0b;--sc:#7a0b0b}
+.adm .b-btn[disabled]{opacity:.65}
+
+/* messages */
+.adm-msg{margin:10px 0 0;padding:10px 14px;border:3px solid;border-radius:4px;font:700 15px var(--font-archivo),sans-serif}
+.adm-msg--ok{background:#dcfce7;border-color:#14532d;color:#14532d}
+.adm-msg--err{background:#ffe4e4;border-color:#7a0b0b;color:#7a0b0b}
+.adm-empty{padding:24px;border:3px dashed var(--b-lilac);border-radius:4px;text-align:center;font-weight:700;color:var(--b-lilac)}
+
+/* onglets actifs / corbeille */
+.adm-tabs{display:flex;gap:10px;margin:0 0 18px}
+.adm-tabs a{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:3px solid var(--b-lilac);border-radius:4px;font:800 14px var(--font-archivo),sans-serif;text-decoration:none}
+.adm-tabs a[aria-current=page]{background:var(--b-yellow);border-color:var(--b-yellow);color:var(--b-ink)}
+
+/* liste de produits / catégories */
+.adm-list{display:flex;flex-direction:column;gap:14px;margin:0;padding:0;list-style:none}
+.adm-row{display:grid;grid-template-columns:72px minmax(0,1fr);gap:8px 14px;align-items:center;padding:14px;background:var(--b-paper);color:var(--b-ink);border-radius:4px;box-shadow:5px 5px 0 var(--b-violet)}
+.adm-row--category{grid-template-columns:minmax(0,1fr)}
+.adm-row__pic{display:flex;align-items:center;justify-content:center;width:72px;height:72px;overflow:hidden;background:var(--b-paper-2);border:2px dashed rgba(18,5,31,.3);font:700 11px var(--font-archivo),sans-serif;text-align:center;color:#4a3a66}
+.adm-row__pic img{width:100%;height:100%;object-fit:contain}
+.adm-row__main{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;min-width:0}
+.adm-row__title{flex:1 1 100%;font:400 22px/1.1 var(--font-anton),sans-serif;text-transform:uppercase;overflow-wrap:anywhere}
+.adm-row__meta{font:700 13px var(--font-archivo),sans-serif;color:#4a2c9a}
+.adm-row__actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px}
+.adm-badge{display:inline-flex;align-items:center;min-height:28px;padding:0 10px;border:2px solid var(--b-ink);background:var(--b-yellow);font:800 12px var(--font-archivo),sans-serif;letter-spacing:.04em;text-transform:uppercase}
+.adm-badge--tbd{background:transparent;border-style:dashed}
+.adm-badge--off{background:#e6d6ff}
+
+/* photo */
+.adm-photo{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;margin-top:10px}
+.adm-photo__preview{display:flex;align-items:center;justify-content:center;width:150px;aspect-ratio:3/4;overflow:hidden;background:var(--b-paper-2);border:3px dashed rgba(18,5,31,.35);font:700 13px var(--font-archivo),sans-serif;color:#4a3a66}
+.adm-photo__preview img{width:100%;height:100%;object-fit:contain}
+.adm-photo__controls{display:flex;flex:1 1 240px;flex-direction:column;gap:6px;min-width:0}
+.adm-photo__controls input[type=file]{max-width:100%;font:500 14px var(--font-archivo),sans-serif}
+
+/* horaires */
+.adm-hours{display:flex;flex-direction:column;gap:10px}
+.adm-hours__row{display:grid;grid-template-columns:96px 1fr 18px 1fr;gap:8px;align-items:center}
+.adm-hours__row b{font:400 20px var(--font-anton),sans-serif;text-transform:uppercase}
+.adm-hours__row .adm-check{grid-column:2/-1}
+.adm-hours__row .adm-input{min-width:0;text-align:center}
+
+/* connexion */
+.adm-login{max-width:440px;margin:0 auto;padding:56px 16px 80px}
+.adm-login .adm-brand{display:block;margin-bottom:6px}
+
+@media (min-width:720px){
+  .adm-row{grid-template-columns:72px minmax(0,1fr) auto}
+  .adm-row--category{grid-template-columns:minmax(0,1fr) auto}
+  .adm-row__actions{grid-column:auto;justify-content:flex-end}
+  .adm-row__title{flex-basis:auto}
+  .adm-hours__row{grid-template-columns:110px 120px 18px 120px auto}
+  .adm-hours__row .adm-check{grid-column:auto}
+}
+@media (prefers-reduced-motion:reduce){.adm *{scroll-behavior:auto}}
+
+/* téléphone : en-tête compact, menu sur une seule ligne défilante */
+@media (max-width:719px){
+  .adm-header{gap:4px 12px;padding:8px 12px}
+  .adm-header form{margin-left:auto}
+  .adm-nav{order:3;flex:1 1 100%;flex-wrap:nowrap;overflow-x:auto;gap:2px;scrollbar-width:none}
+  .adm-nav a{flex:none;padding:0 10px;white-space:nowrap}
+  .adm-brand{font-size:22px}
+}
