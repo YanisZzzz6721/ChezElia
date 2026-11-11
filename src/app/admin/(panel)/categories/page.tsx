@@ -11,7 +11,7 @@ export default async function AdminCategoriesPage() {
   const categories = data ?? [];
 
   return (
-    <>
+    <div className="adm-narrow">
       <h1 className="adm-h1">Catégories</h1>
       <p className="adm-hint">L&rsquo;ordre ci-dessous est celui des onglets du catalogue. Supprimer une catégorie ne supprime pas ses produits : ils restent visibles dans « Tout ».</p>
       <CreateCategoryForm />
@@ -43,6 +43,6 @@ export default async function AdminCategoriesPage() {
           ))}
         </ul>
       )}
-    </>
+    </div>
   );
 }

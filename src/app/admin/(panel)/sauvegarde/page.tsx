@@ -4,6 +4,7 @@ export default function AdminBackupPage() {
   return (
     <>
       <h1 className="adm-h1">Sauvegarde</h1>
+      <div className="adm-cols adm-cols--even">
       <section className="adm-card adm-form">
         <h2 className="adm-h2">Télécharger une sauvegarde</h2>
         <p className="adm-hint">
@@ -17,6 +18,7 @@ export default function AdminBackupPage() {
         </div>
       </section>
       <RestoreForm />
+      </div>
     </>
   );
 }

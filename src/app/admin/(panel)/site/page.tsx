@@ -18,9 +18,15 @@ export default async function AdminSitePage() {
   return (
     <>
       <h1 className="adm-h1">Site</h1>
-      <HeroPhotoForm currentUrl={heroUrl} />
-      <SettingsForm tag={settings.tag} lead={settings.lead} phone={settings.phoneNumber ?? ""} />
+      <div className="adm-cols">
+        <div className="adm-cols__main">
+          <HeroPhotoForm currentUrl={heroUrl} />
+          <SettingsForm tag={settings.tag} lead={settings.lead} phone={settings.phoneNumber ?? ""} />
+        </div>
+        <div className="adm-cols__side">
       <HoursForm hours={hours.map((day) => (day.isClosed ? { isClosed: true, opensAt: "", closesAt: "" } : { isClosed: false, opensAt: day.opensAt, closesAt: day.closesAt }))} />
+        </div>
+      </div>
     </>
   );
 }
