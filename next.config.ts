@@ -38,7 +38,13 @@ const SECURITY_HEADERS = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+  // HTTPS obligatoire pendant 2 ans (Vercel sert déjà le site en HTTPS) ; sans effet en développement local (HTTP).
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
 ];
+
+/** Les pages d'administration ne doivent jamais être copiées dans un cache partagé (CDN, proxy). */
+const ADMIN_HEADERS = [{ key: "Cache-Control", value: "private, no-store, max-age=0" }];
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -48,7 +54,10 @@ const nextConfig: NextConfig = {
   // Les photos (8 Mo maximum, vérifiées côté serveur) transitent par les Server Actions : limite relevée au-delà du 1 Mo par défaut.
   experimental: { serverActions: { bodySizeLimit: "10mb" } },
   async headers() {
-    return [{ source: "/:path*", headers: SECURITY_HEADERS }];
+    return [
+      { source: "/:path*", headers: SECURITY_HEADERS },
+      { source: "/admin/:path*", headers: ADMIN_HEADERS },
+    ];
   },
 };
 

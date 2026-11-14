@@ -4,6 +4,7 @@ import { LEGAL } from "@/content/legal";
 import { valueOrPlaceholder } from "@/lib/legal";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/confidentialite" },
   title: "Politique de confidentialité — Chez Elia, épicerie de nuit à Strasbourg",
   description: "Politique de confidentialité du site de Chez Elia : ce site ne collecte aucune donnée personnelle.",
 };

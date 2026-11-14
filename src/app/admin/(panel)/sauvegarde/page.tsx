@@ -1,6 +1,8 @@
 import { RestoreForm } from "@/components/admin/RestoreForm";
+import { requireAdmin } from "@/lib/admin/auth";
 
-export default function AdminBackupPage() {
+export default async function AdminBackupPage() {
+  await requireAdmin();
   return (
     <>
       <h1 className="adm-h1">Sauvegarde</h1>

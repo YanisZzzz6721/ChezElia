@@ -35,6 +35,12 @@ describe("buildStoreJsonLd", () => {
     expect(buildStoreJsonLd(SAMPLE_HOURS, "03 88 12 34 56")).toMatchObject({ telephone: "+33388123456" });
   });
 
+  it("ajoute l'adresse du site et l'image quand elles sont connues, et seulement alors", () => {
+    expect(buildStoreJsonLd(SAMPLE_HOURS)).not.toHaveProperty("url");
+    expect(buildStoreJsonLd(SAMPLE_HOURS)).not.toHaveProperty("image");
+    expect(buildStoreJsonLd(SAMPLE_HOURS, null, { siteUrl: "https://chez-elia.fr", imageUrl: "https://cdn.test/a.webp" })).toMatchObject({ url: "https://chez-elia.fr", image: "https://cdn.test/a.webp" });
+  });
+
   it("omet le jour fermé et garde 6 jours d'ouverture", () => {
     const days = jsonLd.openingHoursSpecification.map((spec) => spec.dayOfWeek);
     expect(days).toEqual(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]);

@@ -6,6 +6,7 @@ import { SITE } from "@/content/site";
 import { valueOrPlaceholder } from "@/lib/legal";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/mentions-legales" },
   title: "Mentions légales — Chez Elia, épicerie de nuit à Strasbourg",
   description: "Mentions légales du site de Chez Elia, épicerie de nuit au 4 rue Sédillot à Strasbourg.",
 };

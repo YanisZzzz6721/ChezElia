@@ -12,7 +12,8 @@
     "test:rls": "vitest run --config vitest.integration.config.ts",
     "db:start": "supabase start",
     "db:reset": "supabase db reset",
-    "dev:cloud": "set -a && . ./.env.cloud.local && set +a && NEXT_DIST_DIR=.next-cloud next dev -p 3001"
+    "dev:cloud": "set -a && . ./.env.cloud.local && set +a && NEXT_DIST_DIR=.next-cloud next dev -p 3001",
+    "test:security": "vitest run --config vitest.integration.config.ts tests/security"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

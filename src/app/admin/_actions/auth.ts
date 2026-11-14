@@ -20,7 +20,10 @@ const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resol
  *   Ralentit chaque échec de 0,7 s (freine les essais en rafale ; Supabase limite aussi les tentatives par IP).
  */
 export async function loginAction(_previous: ActionResult, formData: FormData): Promise<ActionResult> {
-  const credentials = credentialsSchema.safeParse({ email: formData.get("email"), password: formData.get("password") });
+  // Une requête forgée peut arriver sans formulaire : réponse d'échec identique, jamais de plantage.
+  const credentials = formData instanceof FormData
+    ? credentialsSchema.safeParse({ email: formData.get("email"), password: formData.get("password") })
+    : { success: false as const };
   if (!credentials.success) {
     await wait(FAILED_LOGIN_DELAY_MS);
     return { ok: false, error: GENERIC_LOGIN_ERROR };
