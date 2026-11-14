@@ -64,7 +64,7 @@ node --experimental-strip-types scripts/import-photos.mjs <dossier-parent> --dry
 node --experimental-strip-types scripts/import-photos.mjs <dossier-parent>             # import réel
 ```
 
-- Chaque photo devient une fiche **masquée** (« À nommer · _DSF0621 »), catégorie selon le dossier, **« Prix à confirmer »**, sans description.
+- Chaque photo devient une fiche **masquée** (« À nommer · Boissons · _DSF0621 »), catégorie selon le dossier, **« Prix à confirmer »**, sans description.
 - Les photos passent par le même traitement que l'admin : vrai format vérifié, 8 Mo max, WebP 1600 px, métadonnées retirées.
 - Le script agit avec le compte administrateur (aucune clé secrète) et se relance sans doublon.
 - Ensuite, dans l'admin : donner un titre et un prix à chaque fiche, puis la passer en « Afficher ».

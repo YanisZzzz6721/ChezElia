@@ -1,4 +1,4 @@
-// Importe des photos locales dans le catalogue : UNE FICHE MASQUÉE par photo (titre provisoire, « Prix à confirmer »).
+// Importe des photos locales dans le catalogue : UNE FICHE MASQUÉE par photo (titre provisoire « À nommer · Boissons · _DSF0621 », « Prix à confirmer »).
 // Rien n'est inventé : titres, prix et descriptions sont à saisir ensuite dans l'admin, puis la fiche est affichée.
 //
 // Usage (depuis le terminal) :
@@ -54,8 +54,9 @@ async function ensureCategory(name) {
 }
 
 /** Importe une photo : conversion WebP, envoi, création de la fiche masquée. Renvoie « imported », « skipped » ou « failed: raison ». */
-async function importOne(folder, fileName, categoryId, knownTitles) {
-  const title = `${TITLE_PREFIX}${parse(fileName).name}`;
+async function importOne(folder, fileName, categoryName, categoryId, knownTitles) {
+  // La catégorie fait partie du titre : deux dossiers peuvent contenir des photos de même nom (ex. _DSF0621.JPG).
+  const title = `${TITLE_PREFIX}${categoryName} · ${parse(fileName).name}`;
   if (knownTitles.has(title)) return "skipped";
   if (isDryRun) return "imported";
   let uploadedPath = null;
@@ -96,7 +97,7 @@ for (const folderEntry of folders) {
   async function worker() {
     while (next < files.length) {
       const fileName = files[next++];
-      const result = await importOne(folder, fileName, categoryId, knownTitles);
+      const result = await importOne(folder, fileName, categoryName, categoryId, knownTitles);
       if (result === "imported") totals.imported++;
       else if (result === "skipped") totals.skipped++;
       else totals.failed.push(result.slice("failed: ".length));
