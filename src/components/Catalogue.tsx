@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Category, Product } from "@/content/products";
-import { ALL_CATEGORIES_ID, filterProducts } from "@/lib/catalogue";
+import { ALL_CATEGORIES_ID, filterProducts, listCategoriesWithProducts } from "@/lib/catalogue";
 import { staggerStyle } from "@/lib/motion";
 import { runWithViewTransition } from "@/lib/viewTransition";
 import { NeonShape } from "./NeonShape";
@@ -64,7 +64,7 @@ export function Catalogue({ categories, products }: { categories: readonly Categ
       <div className="b-wrap">
         <h2 className="b-h2" data-reveal>Le <span>catalogue</span></h2>
         <p className="b-intro" data-reveal style={staggerStyle(1)}>Tous les produits du magasin, par catégorie.</p>
-        <CategoryTabs categories={categories} selectedId={selectedId} onSelect={selectCategory} />
+        <CategoryTabs categories={listCategoriesWithProducts(categories, products)} selectedId={selectedId} onSelect={selectCategory} />
         {visibleProducts.length === 0 ? (
           <p className="b-empty">Aucun produit dans cette catégorie pour l’instant.</p>
         ) : (

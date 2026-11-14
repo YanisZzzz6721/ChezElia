@@ -69,3 +69,13 @@ node --experimental-strip-types scripts/import-photos.mjs <dossier-parent>      
 - Le script agit avec le compte administrateur (aucune clé secrète) et se relance sans doublon.
 - Ensuite, dans l'admin : donner un titre et un prix à chaque fiche, puis la passer en « Afficher ».
 - ⚠️ Les photos importées sont stockées dans le bucket public (adresse devinable) : ne les importer qu'une fois les droits confirmés (Q12).
+
+## Nommer en masse les fiches importées
+
+`scripts/apply-titles.mjs` applique un fichier TSV (dossier, nom de fichier, titre, `ok`/`verifier`, `cat=…` facultatif) aux fiches encore intitulées « À nommer · … ».
+Il ne touche jamais au prix, à la description ni à la visibilité, ignore les fiches déjà renommées, et ajoute « (à vérifier) » aux titres incertains.
+
+```bash
+node scripts/apply-titles.mjs <fichier.tsv> --dry-run   # simulation
+node scripts/apply-titles.mjs <fichier.tsv>             # application
+```
