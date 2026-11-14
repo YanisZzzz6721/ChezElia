@@ -13,7 +13,7 @@ const fetchRaw = (path: string, init: RequestInit = {}) => fetch(`${TARGET_URL}$
 const isRedirectToLogin = (response: Response) => [307, 308, 302, 303].includes(response.status) && (response.headers.get("location") ?? "").includes("/admin/login");
 
 describe("authentification : aucune page d'admin sans session", () => {
-  const adminPaths = ["/admin", "/admin/produits", "/admin/produits?q=a", "/admin/produits?vue=corbeille", "/admin/produits/nouveau", `/admin/produits/${UUID}`, "/admin/categories", "/admin/site", "/admin/sauvegarde", "/admin/sauvegarde/export"];
+  const adminPaths = ["/admin", "/admin/produits", "/admin/produits?q=a", "/admin/produits?vue=corbeille", "/admin/produits/nouveau", `/admin/produits/${UUID}`, "/admin/categories", "/admin/faq", "/admin/site", "/admin/sauvegarde", "/admin/sauvegarde/export"];
 
   it.each(adminPaths)("%s redirige vers la connexion et ne renvoie aucun contenu", async (path) => {
     const response = await fetchRaw(path);

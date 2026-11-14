@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { FAQ_ANSWER_MAX_LENGTH, FAQ_QUESTION_MAX_LENGTH } from "@/content/faq";
 import { parsePriceInput } from "./priceInput";
 import { normalizePhoneInput } from "./phone";
 import { DAY_NAMES } from "./siteData";
@@ -157,4 +158,38 @@ export function parseQuickEditForm(formData: FormData): ParseResult<QuickEditInp
   const text = quickEditSchema.safeParse({ id: readText(formData, "id"), title: readText(formData, "title") });
   if (!text.success) return { ok: false, error: firstIssue(text.error) };
   return attempt(() => ({ ok: true, data: { ...text.data, priceCents: parsePriceInput(readText(formData, "price")) } }));
+}
+
+export interface FaqInput {
+  question: string;
+  answer: string;
+}
+
+const faqSchema = z.object({
+  question: z.string().trim().min(1, "La question est obligatoire.").max(FAQ_QUESTION_MAX_LENGTH, `La question est trop longue (${FAQ_QUESTION_MAX_LENGTH} caractères maximum).`),
+  answer: z.string().trim().min(1, "La réponse est obligatoire.").max(FAQ_ANSWER_MAX_LENGTH, `La réponse est trop longue (${FAQ_ANSWER_MAX_LENGTH} caractères maximum).`),
+});
+
+/**
+ * Quoi : lit et valide une question fréquente et sa réponse.
+ * Input : formData — champs question et answer (les retours à la ligne de la réponse sont conservés).
+ * Output : { ok: true, data: { question, answer } } nettoyés, sinon { ok: false, error } lisible.
+ * Effets de bord : aucun (fonction pure).
+ */
+export function parseFaqForm(formData: FormData): ParseResult<FaqInput> {
+  const parsed = faqSchema.safeParse({ question: readText(formData, "question"), answer: readText(formData, "answer") });
+  return parsed.success ? { ok: true, data: parsed.data } : { ok: false, error: firstIssue(parsed.error) };
+}
+
+/**
+ * Quoi : lit et valide la modification d'une question existante.
+ * Input : formData — champs id, question et answer.
+ * Output : { ok: true, data: { id, question, answer } } ou { ok: false, error } lisible.
+ * Effets de bord : aucun (fonction pure).
+ */
+export function parseFaqEditForm(formData: FormData): ParseResult<FaqInput & { id: string }> {
+  const id = z.string().uuid("Identifiant de question invalide.").safeParse(readText(formData, "id"));
+  if (!id.success) return { ok: false, error: firstIssue(id.error) };
+  const faq = parseFaqForm(formData);
+  return faq.ok ? { ok: true, data: { id: id.data, ...faq.data } } : faq;
 }

@@ -1,7 +1,11 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { Product } from "@/content/products";
+import type { FaqItem } from "@/content/faq";
+import { SITE } from "@/content/site";
 import { CallButton } from "./CallButton";
+import { FaqSection } from "./FaqSection";
+import { FindUsSection } from "./FindUsSection";
 import { ProductCard } from "./ProductCard";
 
 const baseProduct: Product = { id: "x", title: "Produit test", categoryId: null, priceInCents: null };
@@ -51,5 +55,47 @@ describe("ProductCard", () => {
 
   it("refuse un prix négatif avec une erreur explicite", () => {
     expect(() => renderToStaticMarkup(<ProductCard product={{ ...baseProduct, priceInCents: -5 }} />)).toThrow(/négatif/);
+  });
+});
+
+describe("FaqSection", () => {
+  const items: FaqItem[] = [
+    { id: "1", question: "Première ?", answer: "Réponse 1" },
+    { id: "2", question: "Seconde ?", answer: "Ligne A\nLigne B" },
+  ];
+
+  it("n'affiche rien du tout tant qu'aucune question n'est saisie", () => {
+    expect(renderToStaticMarkup(<FaqSection items={[]} />)).toBe("");
+  });
+
+  it("affiche chaque question et sa réponse, dans l'ordre reçu, dans des blocs dépliables", () => {
+    const html = renderToStaticMarkup(<FaqSection items={items} />);
+    expect(html.match(/<details/g)).toHaveLength(2);
+    expect(html.indexOf("Première ?")).toBeLessThan(html.indexOf("Seconde ?"));
+    expect(html).toContain("Réponse 1");
+    expect(html).toContain("Questions");
+  });
+
+  it("échappe le HTML saisi par les propriétaires (jamais interprété)", () => {
+    const hostile: FaqItem[] = [{ id: "x", question: "<img src=x onerror=alert(1)>", answer: "<script>alert(1)</script>" }];
+    const html = renderToStaticMarkup(<FaqSection items={hostile} />);
+    expect(html).not.toContain("<script>");
+    expect(html).not.toContain("<img");
+    expect(html).toContain("&lt;script&gt;");
+  });
+});
+
+describe("FindUsSection", () => {
+  it("affiche l'adresse du magasin et un lien d'itinéraire sûr", () => {
+    const html = renderToStaticMarkup(<FindUsSection phoneNumber={null} />);
+    expect(html).toContain(SITE.address);
+    // Dans un attribut HTML, « & » est encodé en « &amp; » : c'est la forme attendue du lien.
+    expect(html).toContain(`href="${SITE.directionsUrl.replaceAll("&", "&amp;")}"`);
+    expect(html).toContain('rel="noopener noreferrer"');
+  });
+
+  it("n'invente aucun numéro : bouton Appeler désactivé sans numéro public, lien tel: avec", () => {
+    expect(renderToStaticMarkup(<FindUsSection phoneNumber={null} />)).toContain("numéro à venir");
+    expect(renderToStaticMarkup(<FindUsSection phoneNumber="03 88 12 34 56" />)).toContain('href="tel:+33388123456"');
   });
 });

@@ -3,6 +3,7 @@ import { BACKUP_VERSION, buildBackup, parseBackup, type BackupData } from "./bac
 
 const CAT = "11111111-1111-4111-8111-111111111111";
 const PRODUCT = "22222222-2222-4222-8222-222222222222";
+const FAQ = "44444444-4444-4444-8444-444444444444";
 const PHOTO = "products/33333333-3333-4333-8333-333333333333.webp";
 
 const data: BackupData = {
@@ -12,6 +13,7 @@ const data: BackupData = {
   ],
   settings: [{ key: "tag", value: "Ouvert tard" }],
   hours: [{ day_index: 0, is_closed: false, opens_at: "15h30", closes_at: "00h30" }],
+  faq: [{ id: FAQ, question: "Livrez-vous ?", answer: "Non.", position: 0 }],
 };
 
 describe("sauvegarde : aller-retour", () => {
@@ -27,7 +29,7 @@ describe("sauvegarde : aller-retour", () => {
   });
 
   it("accepte une base vide (aucun produit)", () => {
-    const empty = { categories: [], products: [], settings: [], hours: [] };
+    const empty = { categories: [], products: [], settings: [], hours: [], faq: [] };
     expect(parseBackup(JSON.stringify(buildBackup(empty, new Date())))).toMatchObject({ ok: true });
   });
 });
@@ -95,5 +97,23 @@ describe("parseBackup : fichiers invalides", () => {
     const duplicate = valid();
     duplicate.products.push(duplicate.products[0]);
     expect(parseBackup(JSON.stringify(duplicate))).toMatchObject({ ok: false, error: expect.stringMatching(/doublon/i) });
+  });
+});
+
+describe("sauvegarde : questions fréquentes (FAQ)", () => {
+  const backupText = (overrides: object) => JSON.stringify({ ...buildBackup(data, new Date()), ...overrides });
+
+  it("relit une ancienne sauvegarde sans FAQ comme une FAQ vide", () => {
+    const { faq: _omitted, ...withoutFaq } = buildBackup(data, new Date());
+    const result = parseBackup(JSON.stringify(withoutFaq));
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data.faq).toEqual([]);
+  });
+
+  it("rejette une question vide, une réponse trop longue et un doublon d'identifiant", () => {
+    expect(parseBackup(backupText({ faq: [{ id: FAQ, question: " ", answer: "R", position: 0 }] }))).toMatchObject({ ok: false });
+    expect(parseBackup(backupText({ faq: [{ id: FAQ, question: "Q", answer: "a".repeat(1001), position: 0 }] }))).toMatchObject({ ok: false });
+    const twice = { id: FAQ, question: "Q", answer: "R", position: 0 };
+    expect(parseBackup(backupText({ faq: [twice, twice] }))).toMatchObject({ ok: false, error: expect.stringMatching(/FAQ/) });
   });
 });

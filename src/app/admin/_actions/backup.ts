@@ -30,7 +30,7 @@ async function findMissingPhotos(supabase: Awaited<ReturnType<typeof requireAdmi
 }
 
 /**
- * Quoi : restaure les fiches d'un fichier de sauvegarde (catégories, produits, réglages, horaires).
+ * Quoi : restaure les fiches d'un fichier de sauvegarde (catégories, produits, réglages, horaires, FAQ).
  *   Les éléments créés après la sauvegarde ne sont PAS supprimés ; ceux de la sauvegarde retrouvent leur état d'alors.
  * Input : _previous — état précédent (useActionState) ; formData — backup (fichier JSON) et confirmation (mot « RESTAURER »).
  * Output : { ok: true, message } (avec les photos manquantes éventuelles) ou { ok: false, error } ; rien n'est écrit si le fichier est invalide.
@@ -61,6 +61,7 @@ export async function restoreBackupAction(_previous: ActionResult, formData: For
       ["produits", supabase.from("products").upsert(backup.products, { onConflict: "id" })],
       ["réglages", supabase.from("site_settings").upsert(backup.settings, { onConflict: "key" })],
       ["horaires", supabase.from("opening_hours").upsert(backup.hours, { onConflict: "day_index" })],
+      ["questions fréquentes", supabase.from("faq_items").upsert(backup.faq, { onConflict: "id" })],
     ];
     for (const [label, step] of afterCategories) {
       const { error } = await step;

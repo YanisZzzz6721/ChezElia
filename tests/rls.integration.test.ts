@@ -162,3 +162,43 @@ describe("administrateur", () => {
     expect(removed.data).toHaveLength(1); // 0 = suppression silencieusement refusée par la RLS
   });
 });
+
+describe("questions fréquentes (faq_items)", () => {
+  const createdFaqIds: string[] = [];
+
+  afterAll(async () => {
+    await service.from("faq_items").delete().like("question", "TEST%");
+  });
+
+  it("anonyme : lecture autorisée, écriture refusée", async () => {
+    const { data: inserted, error: insertError } = await admin.from("faq_items").insert({ question: "TEST lisible ?", answer: "Oui.", position: 999 }).select("id").single();
+    expect(insertError).toBeNull();
+    createdFaqIds.push(inserted!.id);
+
+    const { data, error } = await anon.from("faq_items").select("id").eq("id", inserted!.id);
+    expect(error).toBeNull();
+    expect(data).toHaveLength(1);
+
+    expect((await anon.from("faq_items").insert({ question: "TEST pirate ?", answer: "x", position: 0 })).error).not.toBeNull();
+    const update = await anon.from("faq_items").update({ answer: "piraté" }).eq("id", inserted!.id).select();
+    expect(update.error !== null || (update.data ?? []).length === 0).toBe(true);
+    const del = await anon.from("faq_items").delete().eq("id", inserted!.id).select();
+    expect(del.error !== null || (del.data ?? []).length === 0).toBe(true);
+    const { data: still } = await service.from("faq_items").select("answer").eq("id", inserted!.id).single();
+    expect(still?.answer).toBe("Oui.");
+  });
+
+  it("utilisateur connecté sans rôle admin : aucune écriture", async () => {
+    expect((await stranger.from("faq_items").insert({ question: "TEST étranger ?", answer: "x", position: 0 })).error).not.toBeNull();
+    const update = await stranger.from("faq_items").update({ answer: "piraté" }).eq("id", createdFaqIds[0]!).select();
+    expect(update.error !== null || (update.data ?? []).length === 0).toBe(true);
+  });
+
+  it("refuse une question vide ou trop longue, et journalise la modification de l'administrateur", async () => {
+    expect((await admin.from("faq_items").insert({ question: "   ", answer: "x", position: 0 })).error).not.toBeNull();
+    expect((await admin.from("faq_items").insert({ question: "TEST long", answer: "a".repeat(1001), position: 0 })).error).not.toBeNull();
+    expect((await admin.from("faq_items").update({ answer: "Oui, modifié." }).eq("id", createdFaqIds[0]!)).error).toBeNull();
+    const { data } = await service.from("audit_log").select("user_id").eq("table_name", "faq_items").eq("row_id", createdFaqIds[0]!).eq("action", "UPDATE");
+    expect(data?.[0]?.user_id).toBe(createdUserIds[0]);
+  });
+});
