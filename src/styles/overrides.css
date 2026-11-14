@@ -147,3 +147,19 @@ html.lenis,html.lenis body{height:auto}
 .s-foot__logo{display:flex;justify-content:center;margin:0 0 34px;padding-top:14px}
 .b-nav .lg-link{margin-left:6px}
 @media (prefers-reduced-motion:reduce){.lg-sticker{transition:none}}
+
+/* ───────── Catalogue : recherche, compteur, « Voir plus » ───────── */
+.b-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.b-search{position:relative;display:flex;align-items:center;max-width:520px;margin:0 0 14px}
+.b-search__input{width:100%;min-height:52px;padding:0 52px 0 18px;background:var(--b-paper);color:var(--b-ink);border:3px solid var(--b-ink);border-radius:6px;box-shadow:5px 5px 0 var(--b-violet),0 0 0 3px var(--bn-vc),0 0 14px 3px var(--bn-v);font:700 17px var(--font-archivo),sans-serif;transition:box-shadow .25s var(--ease-out),translate .5s var(--spring)}
+.b-search__input::placeholder{color:#6b5a8c;font-weight:500}
+.b-search__input:focus-visible{outline:3px solid var(--b-yellow);outline-offset:3px;box-shadow:5px 5px 0 var(--b-violet),0 0 0 3px var(--bn-yc),0 0 18px 4px var(--bn-y)}
+.b-search__input::-webkit-search-cancel-button{display:none}
+.b-search__clear{position:absolute;right:6px;top:50%;translate:0 -50%;width:44px;height:44px;border:0;border-radius:50%;background:transparent;color:var(--b-ink);font:800 28px/1 var(--font-archivo),sans-serif;cursor:pointer}
+.b-search__clear:hover{background:rgba(18,5,31,.1)}
+.b-count{margin:0 0 30px;font:700 14px var(--font-archivo),sans-serif;letter-spacing:.04em;color:var(--b-lilac)}
+.b-empty p{margin:0}
+.b-search__reset{margin-top:14px;min-height:44px;padding:0 18px;background:var(--b-yellow);color:var(--b-ink);border:3px solid var(--b-ink);border-radius:4px;box-shadow:4px 4px 0 var(--b-ink);font:800 14px var(--font-archivo),sans-serif;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.b-more{display:flex;justify-content:center;margin:56px 0 0}
+.b-more__btn{min-width:min(100%,320px)}
+@media (max-width:640px){.b-search{max-width:none}.b-count{margin-bottom:22px}.b-more{margin-top:36px}}
