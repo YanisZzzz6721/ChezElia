@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Product } from "@/content/products";
-import { ALL_CATEGORIES_ID, filterProducts, hasAlcoholProducts, isAlcoholCategoryLabel, limitVisible, listCategoriesWithProducts, normalizeForSearch, searchProducts } from "./catalogue";
+import { ALL_CATEGORIES_ID, filterProducts, isAlcoholCategoryLabel, isAlcoholCategorySelected, limitVisible, listCategoriesWithProducts, normalizeForSearch, searchProducts } from "./catalogue";
 
 const products: readonly Product[] = [
   { id: "a", title: "A", categoryId: "boissons", priceInCents: null },
@@ -134,20 +134,20 @@ describe("isAlcoholCategoryLabel", () => {
   });
 });
 
-describe("hasAlcoholProducts", () => {
+describe("isAlcoholCategorySelected", () => {
   const categories = [
     { id: "b", label: "Boissons" },
     { id: "a", label: "Alcools" },
   ];
-  const item = (id: string, categoryId: string | null): Product => ({ id, title: id, categoryId, priceInCents: null });
 
-  it("est vrai dès qu'un produit est dans une catégorie d'alcool", () => {
-    expect(hasAlcoholProducts(categories, [item("1", "b"), item("2", "a")])).toBe(true);
+  it("est vrai uniquement quand l'onglet sélectionné est une catégorie d'alcool", () => {
+    expect(isAlcoholCategorySelected(categories, "a")).toBe(true);
   });
 
-  it("est faux sans produit d'alcool, sans produit, ou sans catégorie d'alcool", () => {
-    expect(hasAlcoholProducts(categories, [item("1", "b"), item("2", null)])).toBe(false);
-    expect(hasAlcoholProducts(categories, [])).toBe(false);
-    expect(hasAlcoholProducts([{ id: "b", label: "Boissons" }], [item("1", "b")])).toBe(false);
+  it("est faux pour « Tout », une autre catégorie ou un identifiant inconnu", () => {
+    expect(isAlcoholCategorySelected(categories, ALL_CATEGORIES_ID)).toBe(false);
+    expect(isAlcoholCategorySelected(categories, "b")).toBe(false);
+    expect(isAlcoholCategorySelected(categories, "inconnu")).toBe(false);
+    expect(isAlcoholCategorySelected([], "a")).toBe(false);
   });
 });

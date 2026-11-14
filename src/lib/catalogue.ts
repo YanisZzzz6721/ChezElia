@@ -87,12 +87,12 @@ export function isAlcoholCategoryLabel(label: string): boolean {
 }
 
 /**
- * Quoi : indique si au moins un produit affichable appartient à une catégorie d'alcool.
- * Input : categories — toutes les catégories ; products — les produits visibles.
- * Output : vrai si la mention de santé doit être affichée dans le catalogue.
+ * Quoi : indique si l'onglet sélectionné est une catégorie d'alcool (la mention de santé ne s'affiche que là).
+ * Input : categories — toutes les catégories ; selectedId — identifiant de l'onglet actif (ou « all »).
+ * Output : vrai si l'onglet actif est une catégorie dont le nom désigne de l'alcool.
  * Effets de bord : aucun (fonction pure).
  */
-export function hasAlcoholProducts(categories: readonly Category[], products: readonly Product[]): boolean {
-  const alcoholCategoryIds = new Set(categories.filter((category) => isAlcoholCategoryLabel(category.label)).map((category) => category.id));
-  return products.some((product) => product.categoryId !== null && alcoholCategoryIds.has(product.categoryId));
+export function isAlcoholCategorySelected(categories: readonly Category[], selectedId: string): boolean {
+  const selected = categories.find((category) => category.id === selectedId);
+  return selected !== undefined && isAlcoholCategoryLabel(selected.label);
 }
