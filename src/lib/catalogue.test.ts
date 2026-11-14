@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Product } from "@/content/products";
-import { ALL_CATEGORIES_ID, filterProducts, limitVisible, listCategoriesWithProducts, normalizeForSearch, searchProducts } from "./catalogue";
+import { ALL_CATEGORIES_ID, filterProducts, hasAlcoholProducts, isAlcoholCategoryLabel, limitVisible, listCategoriesWithProducts, normalizeForSearch, searchProducts } from "./catalogue";
 
 const products: readonly Product[] = [
   { id: "a", title: "A", categoryId: "boissons", priceInCents: null },
@@ -117,5 +117,37 @@ describe("limitVisible", () => {
   it("rejette une limite négative ou non entière", () => {
     expect(() => limitVisible([1], -1)).toThrow(/limite/i);
     expect(() => limitVisible([1], 1.5)).toThrow(/limite/i);
+  });
+});
+
+describe("isAlcoholCategoryLabel", () => {
+  it("reconnaît une catégorie d'alcool, quelle que soit l'écriture", () => {
+    for (const label of ["Alcools", "alcool", "ALCOOLS", "Alcools & spiritueux", "Boissons alcoolisées"]) {
+      expect(isAlcoholCategoryLabel(label), label).toBe(true);
+    }
+  });
+
+  it("ne confond pas avec les autres catégories", () => {
+    for (const label of ["Boissons", "Confiserie", "Épicerie", "Hygiène", "", "Bar à jus"]) {
+      expect(isAlcoholCategoryLabel(label), label).toBe(false);
+    }
+  });
+});
+
+describe("hasAlcoholProducts", () => {
+  const categories = [
+    { id: "b", label: "Boissons" },
+    { id: "a", label: "Alcools" },
+  ];
+  const item = (id: string, categoryId: string | null): Product => ({ id, title: id, categoryId, priceInCents: null });
+
+  it("est vrai dès qu'un produit est dans une catégorie d'alcool", () => {
+    expect(hasAlcoholProducts(categories, [item("1", "b"), item("2", "a")])).toBe(true);
+  });
+
+  it("est faux sans produit d'alcool, sans produit, ou sans catégorie d'alcool", () => {
+    expect(hasAlcoholProducts(categories, [item("1", "b"), item("2", null)])).toBe(false);
+    expect(hasAlcoholProducts(categories, [])).toBe(false);
+    expect(hasAlcoholProducts([{ id: "b", label: "Boissons" }], [item("1", "b")])).toBe(false);
   });
 });

@@ -90,3 +90,9 @@ node scripts/show-products.mjs <fichier.tsv>             # affichage
 ```
 
 ⚠️ Afficher une fiche publie sa photo : ne le faire qu'une fois les droits confirmés (Q12).
+
+## Alcool
+
+`scripts/show-alcohol.mjs` range dans une catégorie « Alcools » et affiche les fiches d'alcool d'un fichier TSV (colonne `alcool`), une fiche par titre. À n'utiliser qu'une fois la licence de vente confirmée.
+Dès qu'une catégorie dont le nom contient « alcool » a un produit visible, le catalogue affiche la mention : « L'abus d'alcool est dangereux pour la santé. À consommer avec modération. La vente d'alcool est interdite aux mineurs. »
+Vérifier aussi les règles locales (publicité en ligne, horaires de vente à emporter) : ce dépôt n'apporte aucune garantie juridique.

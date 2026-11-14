@@ -5,7 +5,9 @@ import type { Category, Product } from "@/content/products";
 import {
   ALL_CATEGORIES_ID,
   INITIAL_VISIBLE_COUNT,
+  ALCOHOL_NOTICE,
   LOAD_MORE_STEP,
+  hasAlcoholProducts,
   filterProducts,
   limitVisible,
   listCategoriesWithProducts,
@@ -93,6 +95,7 @@ export function Catalogue({ categories, products }: { categories: readonly Categ
   const remainingCount = matchingProducts.length - shownProducts.length;
   const hasProducts = products.length > 0;
   const isSearching = search.trim() !== "";
+  const showAlcoholNotice = hasAlcoholProducts(categories, products);
 
   const selectCategory = (categoryId: string) => {
     if (categoryId === selectedId) return;
@@ -128,6 +131,7 @@ export function Catalogue({ categories, products }: { categories: readonly Categ
               {matchingProducts.length} produit{matchingProducts.length > 1 ? "s" : ""}
               {isSearching ? ` pour « ${search.trim()} »` : ""}
             </p>
+            {showAlcoholNotice ? <p className="b-legal" role="note">{ALCOHOL_NOTICE}</p> : null}
           </>
         ) : null}
         {matchingProducts.length === 0 ? (

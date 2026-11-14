@@ -71,3 +71,28 @@ export function limitVisible<Item>(items: readonly Item[], count: number): reado
   if (!Number.isInteger(count) || count < 0) throw new Error(`Limite invalide : un entier >= 0 est attendu (reçu ${count}).`);
   return items.slice(0, count);
 }
+
+/** Mention de santé qui doit accompagner la présentation de boissons alcoolisées (France). */
+export const ALCOHOL_NOTICE =
+  "L’abus d’alcool est dangereux pour la santé. À consommer avec modération. La vente d’alcool est interdite aux mineurs.";
+
+/**
+ * Quoi : indique si le nom d'une catégorie désigne de l'alcool (« Alcools », « Boissons alcoolisées »…).
+ * Input : label — le nom de la catégorie.
+ * Output : vrai si le nom contient « alcool » (sans tenir compte de la casse ni des accents).
+ * Effets de bord : aucun (fonction pure).
+ */
+export function isAlcoholCategoryLabel(label: string): boolean {
+  return normalizeForSearch(label).includes("alcool");
+}
+
+/**
+ * Quoi : indique si au moins un produit affichable appartient à une catégorie d'alcool.
+ * Input : categories — toutes les catégories ; products — les produits visibles.
+ * Output : vrai si la mention de santé doit être affichée dans le catalogue.
+ * Effets de bord : aucun (fonction pure).
+ */
+export function hasAlcoholProducts(categories: readonly Category[], products: readonly Product[]): boolean {
+  const alcoholCategoryIds = new Set(categories.filter((category) => isAlcoholCategoryLabel(category.label)).map((category) => category.id));
+  return products.some((product) => product.categoryId !== null && alcoholCategoryIds.has(product.categoryId));
+}
