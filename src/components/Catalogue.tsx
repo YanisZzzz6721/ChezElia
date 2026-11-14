@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Category, Product } from "@/content/products";
-import { ALL_CATEGORIES_ID, filterProducts } from "@/lib/catalogue";
+import { ALL_CATEGORIES_ID, filterProducts, listCategoriesWithProducts } from "@/lib/catalogue";
 import { staggerStyle } from "@/lib/motion";
 import { runWithViewTransition } from "@/lib/viewTransition";
 import { NeonShape } from "./NeonShape";
@@ -44,6 +44,7 @@ export function Catalogue({ categories, products }: { categories: readonly Categ
   // Les fiches n'apparaissent « au scroll » qu'au premier affichage ; ensuite la transition de vue prend le relais.
   const [hasChangedCategory, setHasChangedCategory] = useState(false);
   const visibleProducts = filterProducts(products, selectedId);
+  const hasProducts = products.length > 0;
 
   const selectCategory = (categoryId: string) => {
     if (categoryId === selectedId) return;
@@ -64,9 +65,11 @@ export function Catalogue({ categories, products }: { categories: readonly Categ
       <div className="b-wrap">
         <h2 className="b-h2" data-reveal>Le <span>catalogue</span></h2>
         <p className="b-intro" data-reveal style={staggerStyle(1)}>Tous les produits du magasin, par catégorie.</p>
-        <CategoryTabs categories={categories} selectedId={selectedId} onSelect={selectCategory} />
+        {hasProducts ? (
+          <CategoryTabs categories={listCategoriesWithProducts(categories, products)} selectedId={selectedId} onSelect={selectCategory} />
+        ) : null}
         {visibleProducts.length === 0 ? (
-          <p className="b-empty">Aucun produit dans cette catégorie pour l’instant.</p>
+          <p className="b-empty">{hasProducts ? "Aucun produit dans cette catégorie pour l’instant." : "Le catalogue en ligne arrive bientôt."}</p>
         ) : (
           <div className="b-grid">
             {visibleProducts.map((product, index) => (

@@ -2,6 +2,7 @@ import { SITE } from "@/content/site";
 import { ActionButtons } from "./ActionButtons";
 import { CallButton } from "./CallButton";
 import { Address } from "./Address";
+import { Logo } from "./Logo";
 import { NeonShape } from "./NeonShape";
 import { StorePhotoFrame, type StorePhotoFrameProps } from "./StorePhotoFrame";
 
@@ -19,7 +20,7 @@ const MAIN_NAV = [
 function Header() {
   return (
     <header className="b-nav">
-      <a className="b-brand" href="#top">{SITE.name}</a>
+      <Logo size="nav" href="#top" />
       <nav className="b-links" aria-label="Navigation principale">
         {MAIN_NAV.map((item) => (
           <a key={item.href} href={item.href}>{item.label}</a>
