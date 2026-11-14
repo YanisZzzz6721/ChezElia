@@ -134,3 +134,27 @@ export function parseHoursForm(formData: FormData): ParseResult<HoursInput[]> {
   }
   return { ok: true, data: days };
 }
+
+export interface QuickEditInput {
+  id: string;
+  title: string;
+  /** null = « Prix à confirmer ». */
+  priceCents: number | null;
+}
+
+const quickEditSchema = z.object({
+  id: z.string().uuid("Identifiant de produit invalide."),
+  title: z.string().trim().min(1, "Le titre du produit est obligatoire.").max(200, "Le titre est trop long (200 caractères maximum)."),
+});
+
+/**
+ * Quoi : lit et valide la modification rapide (titre + prix) d'une ligne de la liste.
+ * Input : formData — champs id, title, price.
+ * Output : { ok: true, data } (prix en centimes, null si vide) ou { ok: false, error } lisible.
+ * Effets de bord : aucun (fonction pure).
+ */
+export function parseQuickEditForm(formData: FormData): ParseResult<QuickEditInput> {
+  const text = quickEditSchema.safeParse({ id: readText(formData, "id"), title: readText(formData, "title") });
+  if (!text.success) return { ok: false, error: firstIssue(text.error) };
+  return attempt(() => ({ ok: true, data: { ...text.data, priceCents: parsePriceInput(readText(formData, "price")) } }));
+}

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/auth";
 import { readPhotoFile, removePhoto, uploadPhoto, type StoredPhoto } from "@/lib/admin/photoStorage";
 import { redirectWithFlash, toActionError, type ActionResult } from "@/lib/admin/result";
-import { parseProductForm } from "@/lib/adminForms";
+import { parseProductForm, parseQuickEditForm } from "@/lib/adminForms";
 
 const idSchema = z.string().uuid("Identifiant de produit invalide.");
 
@@ -150,4 +150,25 @@ export async function deleteProductForeverAction(formData: FormData): Promise<vo
   }
   refreshPages();
   redirectWithFlash("/admin/produits", "deleted");
+}
+
+/**
+ * Quoi : enregistre rapidement le titre et le prix d'un produit depuis la liste (sans ouvrir la fiche).
+ * Input : _previous — état précédent (useActionState) ; formData — id, title, price (vide = « Prix à confirmer »).
+ * Output : { ok: true, message } ou { ok: false, error } (titre vide, prix invalide…).
+ * Effets de bord : vérifie l'administrateur ; met à jour title et price_cents (journalisé) ; rafraîchit les pages.
+ *   Ne touche ni à la visibilité, ni à la photo, ni à la description.
+ */
+export async function quickSaveProductAction(_previous: ActionResult, formData: FormData): Promise<ActionResult> {
+  const { supabase } = await requireAdmin();
+  const input = parseQuickEditForm(formData);
+  if (!input.ok) return { ok: false, error: input.error };
+
+  const { error } = await supabase
+    .from("products")
+    .update({ title: input.data.title, price_cents: input.data.priceCents })
+    .eq("id", input.data.id);
+  if (error) return { ok: false, error: `Enregistrement impossible : ${error.message}` };
+  refreshPages();
+  return { ok: true, message: "Enregistré ✓" };
 }
