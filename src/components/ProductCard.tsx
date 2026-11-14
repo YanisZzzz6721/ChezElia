@@ -17,7 +17,7 @@ function ProductPicture({ product }: { product: Product }) {
     );
   }
   return (
-    <div className="b-card__pic">
+    <div className="b-card__pic b-card__pic--photo">
       <Image src={product.photo.url} width={product.photo.width} height={product.photo.height} alt={product.title} unoptimized />
     </div>
   );
