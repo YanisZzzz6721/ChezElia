@@ -94,5 +94,5 @@ node scripts/show-products.mjs <fichier.tsv>             # affichage
 ## Alcool
 
 `scripts/show-alcohol.mjs` range dans une catégorie « Alcools » et affiche les fiches d'alcool d'un fichier TSV (colonne `alcool`), une fiche par titre. À n'utiliser qu'une fois la licence de vente confirmée.
-Dès qu'une catégorie dont le nom contient « alcool » a un produit visible, le catalogue affiche la mention : « L'abus d'alcool est dangereux pour la santé. À consommer avec modération. La vente d'alcool est interdite aux mineurs. »
+Quand l'onglet d'une catégorie dont le nom contient « alcool » est sélectionné, le catalogue affiche la mention : « L'abus d'alcool est dangereux pour la santé. À consommer avec modération. La vente d'alcool est interdite aux mineurs. »
 Vérifier aussi les règles locales (publicité en ligne, horaires de vente à emporter) : ce dépôt n'apporte aucune garantie juridique.

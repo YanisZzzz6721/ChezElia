@@ -7,7 +7,7 @@ import {
   INITIAL_VISIBLE_COUNT,
   ALCOHOL_NOTICE,
   LOAD_MORE_STEP,
-  hasAlcoholProducts,
+  isAlcoholCategorySelected,
   filterProducts,
   limitVisible,
   listCategoriesWithProducts,
@@ -95,7 +95,7 @@ export function Catalogue({ categories, products }: { categories: readonly Categ
   const remainingCount = matchingProducts.length - shownProducts.length;
   const hasProducts = products.length > 0;
   const isSearching = search.trim() !== "";
-  const showAlcoholNotice = hasAlcoholProducts(categories, products);
+  const showAlcoholNotice = isAlcoholCategorySelected(categories, selectedId);
 
   const selectCategory = (categoryId: string) => {
     if (categoryId === selectedId) return;
