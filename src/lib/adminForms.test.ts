@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseCategoryForm, parseHoursForm, parseProductForm, parseSettingsForm } from "./adminForms";
+import { parseCategoryForm, parseHoursForm, parseProductForm, parseQuickEditForm, parseSettingsForm } from "./adminForms";
 
 function form(fields: Record<string, string>): FormData {
   const data = new FormData();
@@ -90,5 +90,24 @@ describe("parseHoursForm", () => {
     expect(parseHoursForm(week({ opens_2: "25h00" }))).toMatchObject({ ok: false, error: expect.stringContaining("Mercredi") });
     expect(parseHoursForm(week({ closes_3: "" }))).toMatchObject({ ok: false, error: expect.stringContaining("Jeudi") });
     expect(parseHoursForm(week({ opens_0: "15:30" }))).toMatchObject({ ok: false, error: expect.stringContaining("Lundi") });
+  });
+});
+
+describe("parseQuickEditForm", () => {
+  it("accepte un titre et un prix, et garde le prix vide = « Prix à confirmer »", () => {
+    expect(parseQuickEditForm(form({ id: UUID, title: " Fanta Orange ", price: "1,5" }))).toEqual({
+      ok: true, data: { id: UUID, title: "Fanta Orange", priceCents: 150 },
+    });
+    expect(parseQuickEditForm(form({ id: UUID, title: "Fanta", price: "" }))).toEqual({ ok: true, data: { id: UUID, title: "Fanta", priceCents: null } });
+  });
+
+  it("distingue le prix 0 du prix absent", () => {
+    expect(parseQuickEditForm(form({ id: UUID, title: "Offert", price: "0" }))).toMatchObject({ ok: true, data: { priceCents: 0 } });
+  });
+
+  it("rejette un identifiant invalide, un titre vide ou un prix invalide", () => {
+    expect(parseQuickEditForm(form({ id: "x", title: "A", price: "" }))).toMatchObject({ ok: false, error: expect.stringMatching(/identifiant/i) });
+    expect(parseQuickEditForm(form({ id: UUID, title: "  ", price: "" }))).toMatchObject({ ok: false, error: expect.stringMatching(/titre/i) });
+    expect(parseQuickEditForm(form({ id: UUID, title: "A", price: "abc" }))).toMatchObject({ ok: false, error: expect.stringMatching(/Prix invalide/) });
   });
 });

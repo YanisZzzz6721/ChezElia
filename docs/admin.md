@@ -79,3 +79,14 @@ Il ne touche jamais au prix, à la description ni à la visibilité, ignore les 
 node scripts/apply-titles.mjs <fichier.tsv> --dry-run   # simulation
 node scripts/apply-titles.mjs <fichier.tsv>             # application
 ```
+
+## Afficher en masse les fiches « sûres »
+
+`scripts/show-products.mjs` passe en « visible » les fiches d'un fichier TSV marquées `ok`, **hors alcool**, **une seule fiche par titre** (les photos en double du même produit ne sont pas répétées). Il ne touche ni au titre, ni au prix, ni à la description.
+
+```bash
+node scripts/show-products.mjs <fichier.tsv> --dry-run   # simulation
+node scripts/show-products.mjs <fichier.tsv>             # affichage
+```
+
+⚠️ Afficher une fiche publie sa photo : ne le faire qu'une fois les droits confirmés (Q12).
