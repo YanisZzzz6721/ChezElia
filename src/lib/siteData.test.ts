@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_SETTINGS,
   mapCategoryRows,
+  mapFaqRows,
   mapHoursRows,
   mapProductRow,
   mapSettingRows,
@@ -83,5 +84,22 @@ describe("mapSettingRows", () => {
     expect(() => mapSettingRows([{ key: "evil", value: 1 }])).toThrow(/inconnu/);
     expect(() => mapSettingRows([{ key: "tag", value: "" }])).toThrow(/tag/);
     expect(() => mapSettingRows([{ key: "hero_photo", value: { path: "" } }])).toThrow(/hero_photo/);
+  });
+});
+
+describe("mapFaqRows", () => {
+  it("trie par position et ne garde que question et réponse utiles à l'affichage", () => {
+    const rows = [
+      { id: "b", question: "Deuxième ?", answer: "R2", position: 1 },
+      { id: "a", question: "Première ?", answer: "R1", position: 0 },
+    ];
+    expect(mapFaqRows(rows)).toEqual([
+      { id: "a", question: "Première ?", answer: "R1" },
+      { id: "b", question: "Deuxième ?", answer: "R2" },
+    ]);
+  });
+
+  it("accepte une liste vide (la section n'est alors pas affichée)", () => {
+    expect(mapFaqRows([])).toEqual([]);
   });
 });

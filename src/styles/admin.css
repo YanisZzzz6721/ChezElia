@@ -215,3 +215,8 @@ textarea.adm-input{resize:vertical;line-height:1.4}
 @media (min-width:900px){
   .adm-row--quick{grid-template-columns:80px minmax(0,1fr) auto}
 }
+
+/* FAQ : chaque question occupe toute la largeur, actions en dessous */
+.adm-row--faq{grid-template-columns:minmax(0,1fr)}
+.adm-row--faq .adm-row__main>form{flex:1 1 100%;min-width:0}
+.adm-row--faq .adm-row__actions{grid-column:1/-1;justify-content:start}

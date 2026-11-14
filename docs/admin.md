@@ -96,3 +96,17 @@ node scripts/show-products.mjs <fichier.tsv>             # affichage
 `scripts/show-alcohol.mjs` range dans une catégorie « Alcools » et affiche les fiches d'alcool d'un fichier TSV (colonne `alcool`), une fiche par titre. À n'utiliser qu'une fois la licence de vente confirmée.
 Quand l'onglet d'une catégorie dont le nom contient « alcool » est sélectionné, le catalogue affiche la mention : « L'abus d'alcool est dangereux pour la santé. À consommer avec modération. La vente d'alcool est interdite aux mineurs. »
 Vérifier aussi les règles locales (publicité en ligne, horaires de vente à emporter) : ce dépôt n'apporte aucune garantie juridique.
+
+## Questions fréquentes (FAQ)
+
+- Les propriétaires gèrent la FAQ dans l'administration, onglet **FAQ** : ajouter, modifier, monter, descendre, supprimer.
+- La section « Questions fréquentes » s'affiche sous le catalogue **seulement s'il y a au moins une question** ; aucune question n'est créée par défaut (aucune donnée inventée).
+- Limites : question 200 caractères, réponse 1 000 caractères. Les réponses sont du texte brut (les retours à la ligne sont conservés, le HTML est affiché tel quel, jamais interprété).
+- Les modifications apparaissent sur le site en moins d'une minute.
+- La FAQ est incluse dans la sauvegarde ; une ancienne sauvegarde sans FAQ se restaure comme une FAQ vide.
+- Migration : `20261114000000_faq.sql` — à appliquer au cloud avec `npx supabase db push --remote` (d'abord `--dry-run`).
+- Le balisage « FAQPage » n'est pas ajouté : Google n'affiche plus les résultats enrichis FAQ pour un commerce, le texte visible suffit.
+
+## Section « Où nous trouver »
+
+Adresse, bouton d'itinéraire et bouton d'appel, centrés ; elle utilise `SITE.address` et `SITE.directionsUrl` (`src/content/site.ts`) et le numéro public saisi dans l'onglet **Site**. Aucun plan externe n'est intégré (pas de cookie tiers, pas de bannière de consentement) : l'itinéraire s'ouvre dans Google Maps au clic.

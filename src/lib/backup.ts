@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { FAQ_ANSWER_MAX_LENGTH, FAQ_QUESTION_MAX_LENGTH } from "@/content/faq";
 
 export const BACKUP_VERSION = 1;
 
@@ -7,6 +8,12 @@ const PHOTO_PATH_PATTERN = /^(products|site)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4
 const TIME_PATTERN = /^([01]\d|2[0-3])h[0-5]\d$/;
 
 const categorySchema = z.object({ id: z.string().uuid(), name: z.string().trim().min(1).max(60), position: z.number().int() });
+const faqSchema = z.object({
+  id: z.string().uuid(),
+  question: z.string().trim().min(1).max(FAQ_QUESTION_MAX_LENGTH),
+  answer: z.string().trim().min(1).max(FAQ_ANSWER_MAX_LENGTH),
+  position: z.number().int(),
+});
 const productSchema = z
   .object({
     id: z.string().uuid(),
@@ -48,6 +55,8 @@ const backupSchema = z.object({
   products: z.array(productSchema),
   settings: z.array(settingSchema),
   hours: z.array(hoursSchema),
+  /** Absente des sauvegardes antérieures à la FAQ : relue comme une FAQ vide. */
+  faq: z.array(faqSchema).default([]),
 });
 
 export type BackupFile = z.infer<typeof backupSchema>;
@@ -55,7 +64,7 @@ export type BackupData = Omit<BackupFile, "version" | "exportedAt">;
 
 /**
  * Quoi : assemble le fichier de sauvegarde (JSON) à partir des données lues en base.
- * Input : data — catégories, produits (corbeille comprise), réglages, horaires ; now — date d'export.
+ * Input : data — catégories, produits (corbeille comprise), réglages, horaires, FAQ ; now — date d'export.
  * Output : l'objet sauvegarde, versionné et daté.
  * Effets de bord : aucun (fonction pure). Les photos elles-mêmes restent dans le stockage : seuls leurs chemins sont sauvegardés.
  */
@@ -68,6 +77,7 @@ function findConsistencyProblem(file: BackupFile): string | null {
   const categoryIds = new Set(file.categories.map((c) => c.id));
   if (categoryIds.size !== file.categories.length) return "Sauvegarde invalide : doublon d'identifiant de catégorie.";
   if (new Set(file.products.map((p) => p.id)).size !== file.products.length) return "Sauvegarde invalide : doublon d'identifiant de produit.";
+  if (new Set(file.faq.map((q) => q.id)).size !== file.faq.length) return "Sauvegarde invalide : doublon d'identifiant de question FAQ.";
   if (new Set(file.hours.map((h) => h.day_index)).size !== file.hours.length) return "Sauvegarde invalide : doublon de jour dans les horaires.";
   const orphan = file.products.find((p) => p.category_id !== null && !categoryIds.has(p.category_id));
   if (orphan) return `Sauvegarde invalide : le produit « ${orphan.title} » référence une catégorie absente du fichier.`;

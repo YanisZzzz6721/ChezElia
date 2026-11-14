@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseCategoryForm, parseHoursForm, parseProductForm, parseQuickEditForm, parseSettingsForm } from "./adminForms";
+import { parseCategoryForm, parseFaqEditForm, parseFaqForm, parseHoursForm, parseProductForm, parseQuickEditForm, parseSettingsForm } from "./adminForms";
 
 function form(fields: Record<string, string>): FormData {
   const data = new FormData();
@@ -109,5 +109,35 @@ describe("parseQuickEditForm", () => {
     expect(parseQuickEditForm(form({ id: "x", title: "A", price: "" }))).toMatchObject({ ok: false, error: expect.stringMatching(/identifiant/i) });
     expect(parseQuickEditForm(form({ id: UUID, title: "  ", price: "" }))).toMatchObject({ ok: false, error: expect.stringMatching(/titre/i) });
     expect(parseQuickEditForm(form({ id: UUID, title: "A", price: "abc" }))).toMatchObject({ ok: false, error: expect.stringMatching(/Prix invalide/) });
+  });
+});
+
+describe("parseFaqForm", () => {
+  it("nettoie la question et conserve les retours à la ligne de la réponse", () => {
+    const result = parseFaqForm(form({ question: "  Êtes-vous ouverts le dimanche ? ", answer: "  Ligne 1\nLigne 2  " }));
+    expect(result).toEqual({ ok: true, data: { question: "Êtes-vous ouverts le dimanche ?", answer: "Ligne 1\nLigne 2" } });
+  });
+
+  it("rejette une question ou une réponse vide (espaces seuls compris)", () => {
+    expect(parseFaqForm(form({ question: "  ", answer: "Oui" }))).toMatchObject({ ok: false, error: expect.stringMatching(/question/i) });
+    expect(parseFaqForm(form({ question: "Q ?", answer: " \n " }))).toMatchObject({ ok: false, error: expect.stringMatching(/réponse/i) });
+  });
+
+  it("rejette une question de plus de 200 caractères et une réponse de plus de 1000, accepte les limites exactes", () => {
+    expect(parseFaqForm(form({ question: "q".repeat(201), answer: "Oui" }))).toMatchObject({ ok: false });
+    expect(parseFaqForm(form({ question: "Q", answer: "a".repeat(1001) }))).toMatchObject({ ok: false });
+    expect(parseFaqForm(form({ question: "q".repeat(200), answer: "a".repeat(1000) }))).toMatchObject({ ok: true });
+  });
+
+  it("traite un champ absent comme vide (requête forgée)", () => {
+    expect(parseFaqForm(new FormData())).toMatchObject({ ok: false });
+  });
+});
+
+describe("parseFaqEditForm", () => {
+  it("exige un identifiant valide en plus des champs", () => {
+    expect(parseFaqEditForm(form({ id: UUID, question: "Q ?", answer: "R" }))).toEqual({ ok: true, data: { id: UUID, question: "Q ?", answer: "R" } });
+    expect(parseFaqEditForm(form({ id: "pas-un-uuid", question: "Q ?", answer: "R" }))).toMatchObject({ ok: false });
+    expect(parseFaqEditForm(form({ question: "Q ?", answer: "R" }))).toMatchObject({ ok: false });
   });
 });

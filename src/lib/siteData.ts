@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { DayHours } from "@/content/hours";
+import type { FaqItem } from "@/content/faq";
 import type { Category, Product } from "@/content/products";
 import { SITE } from "@/content/site";
 
@@ -8,6 +9,13 @@ export const DAY_NAMES = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Sa
 export interface CategoryRow {
   id: string;
   name: string;
+  position: number;
+}
+
+export interface FaqRow {
+  id: string;
+  question: string;
+  answer: string;
   position: number;
 }
 
@@ -72,6 +80,18 @@ export const DEFAULT_SETTINGS: SiteSettings = {
  */
 export function mapCategoryRows(rows: readonly CategoryRow[]): Category[] {
   return [...rows].sort((a, b) => a.position - b.position).map((row) => ({ id: row.id, label: row.name }));
+}
+
+/**
+ * Quoi : transforme les lignes « questions fréquentes » de la base en questions du site, triées par position.
+ * Input : rows — lignes de la table faq_items.
+ * Output : les questions {id, question, answer} dans l'ordre d'affichage (liste vide si aucune).
+ * Effets de bord : aucun (fonction pure).
+ */
+export function mapFaqRows(rows: readonly FaqRow[]): FaqItem[] {
+  return [...rows]
+    .sort((a, b) => a.position - b.position)
+    .map((row) => ({ id: row.id, question: row.question, answer: row.answer }));
 }
 
 /**
