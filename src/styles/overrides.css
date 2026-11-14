@@ -119,9 +119,11 @@ html.lenis,html.lenis body{height:auto}
 
 /* ── Cartes produit : se soulèvent au survol avec le ressort ── */
 .b-card{transition:transform .6s var(--spring),box-shadow .3s var(--ease-out)}
-.b-card:hover{transform:rotate(0) translateY(-7px)}
 .b-card__pic img{transition:scale .6s var(--spring)}
-.b-card:hover .b-card__pic img{scale:1.07}
+@media (hover:hover){
+  .b-card:hover{transform:rotate(0) translateY(-7px)}
+  .b-card:hover .b-card__pic img{scale:1.07}
+}
 
 /* ── Changement d'onglet : les fiches glissent vers leur nouvelle place (View Transitions) ── */
 ::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
@@ -163,3 +165,13 @@ html.lenis,html.lenis body{height:auto}
 .b-more{display:flex;justify-content:center;margin:56px 0 0}
 .b-more__btn{min-width:min(100%,320px)}
 @media (max-width:640px){.b-search{max-width:none}.b-count{margin-bottom:22px}.b-more{margin-top:36px}}
+
+
+/* ═════════ Fluidité : rendu allégé ═════════
+   - Grain : une seule petite tuile de bruit répétée sur un calque fixe de la taille de l'écran
+     (avant : un filtre SVG recalculé sur toute la hauteur de la page, très coûteux et en mémoire graphique).
+   - Néons : chaque tube est rendu une fois sur son propre calque ; seule son opacité est animée.
+   - Sur écran tactile, la pulsation infinie est coupée (économie de batterie et de saccades). */
+.b-grain{position:fixed;inset:0;width:auto;height:auto;opacity:.07;mix-blend-mode:normal;z-index:6;pointer-events:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");background-size:180px 180px}
+.bn{will-change:opacity}
+@media (hover:none){.bn{animation:none}}

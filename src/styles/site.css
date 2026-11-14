@@ -31,7 +31,7 @@
 .b-btn .ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 .b-btn small{font:700 11px/1 var(--font-archivo),sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#4a3a66}
 .b-btn--primary{background:var(--b-yellow);color:var(--b-ink)}
-.b-btn--primary:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--b-ink)}
+@media (hover:hover){.b-btn--primary:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--b-ink)}}
 .b-btn--ghost{background:var(--b-paper);color:var(--b-ink)}
 .b-btn[disabled]{border-style:dashed;cursor:not-allowed}
 .b-addr{display:inline-flex;align-items:center;gap:10px;margin:32px 0 0;padding:10px 18px;background:var(--b-paper);color:var(--b-ink);font-family:var(--font-marker),cursive;font-size:20px;line-height:1.2;transform:rotate(-1.5deg);box-shadow:4px 4px 0 rgba(18,5,31,.55)}
@@ -83,7 +83,7 @@
 .b-tab{min-height:48px;padding:0 22px;border:3px solid var(--b-paper);border-radius:4px;background:transparent;color:var(--b-paper);font:800 15px var(--font-archivo),sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:transform .15s,box-shadow .15s,background .15s}
 .b-tab:nth-child(2){transform:rotate(-1.4deg)}
 .b-tab:nth-child(3){transform:rotate(1.2deg)}
-.b-tab:hover{background:rgba(246,240,228,.14)}
+@media (hover:hover){.b-tab:hover{background:rgba(246,240,228,.14)}}
 .b-tab[aria-pressed="true"]{background:var(--b-yellow);border-color:var(--b-yellow);color:var(--b-ink);box-shadow:5px 5px 0 var(--b-violet)}
 .b-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:60px 24px;align-items:start}
 .b-card{position:relative;display:flex;flex-direction:column;min-width:0;background:var(--b-paper);color:var(--b-ink);box-shadow:7px 7px 0 var(--b-violet);transition:transform .2s,box-shadow .2s}
@@ -92,7 +92,7 @@
 .b-card:nth-child(4n+2){margin-top:34px}
 .b-card:nth-child(4n+3){margin-top:-6px}
 .b-card:nth-child(4n+4){margin-top:18px}
-.b-card:hover{transform:rotate(0) translateY(-4px);box-shadow:10px 10px 0 var(--b-violet-hi)}
+@media (hover:hover){.b-card:hover{transform:rotate(0) translateY(-4px);box-shadow:10px 10px 0 var(--b-violet-hi)}}
 .b-card__pic{position:relative;aspect-ratio:1/1;margin:0 14px;border-bottom:3px dashed rgba(18,5,31,.28)}
 .b-card__pic img{position:absolute;left:8%;top:-18%;width:84%;height:118%;object-fit:contain;object-position:center bottom;
   filter:drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(0 10px 8px rgba(18,5,31,.4))}
@@ -192,7 +192,7 @@
 
 /* boutons et étiquettes cerclés de tube */
 .b-links .b-links__cta,.b-btn--primary{box-shadow:5px 5px 0 var(--b-ink),0 0 0 3px var(--bn-yc),0 0 16px 3px var(--bn-y),0 0 44px rgba(255,214,10,.5)}
-.b-btn--primary:hover{box-shadow:8px 8px 0 var(--b-ink),0 0 0 3px var(--bn-yc),0 0 22px 4px var(--bn-y),0 0 60px rgba(255,214,10,.65)}
+@media (hover:hover){.b-btn--primary:hover{box-shadow:8px 8px 0 var(--b-ink),0 0 0 3px var(--bn-yc),0 0 22px 4px var(--bn-y),0 0 60px rgba(255,214,10,.65)}}
 .b-btn--ghost{box-shadow:5px 5px 0 var(--b-ink),0 0 0 3px var(--bn-vc),0 0 14px 3px var(--bn-v),0 0 38px rgba(165,107,255,.55)}
 .b-addr{box-shadow:4px 4px 0 rgba(18,5,31,.55),0 0 0 3px var(--bn-yc),0 0 14px 3px var(--bn-y),0 0 40px rgba(255,214,10,.45)}
 
@@ -220,7 +220,7 @@
 .b-tab{border-color:var(--bn-vc);box-shadow:0 0 6px var(--bn-v),0 0 20px rgba(165,107,255,.6),inset 0 0 10px rgba(165,107,255,.3)}
 .b-tab[aria-pressed="true"]{border-color:var(--bn-yc);box-shadow:5px 5px 0 var(--b-violet),0 0 8px var(--bn-y),0 0 30px rgba(255,214,10,.7)}
 .b-card{box-shadow:0 0 0 3px var(--bn-yc),0 0 12px 3px var(--bn-y),0 0 40px 6px rgba(255,214,10,.4),9px 9px 0 3px var(--b-violet)}
-.b-card:hover{box-shadow:0 0 0 3px var(--bn-yc),0 0 18px 4px var(--bn-y),0 0 56px 10px rgba(255,214,10,.55),12px 12px 0 3px var(--b-violet-hi)}
+@media (hover:hover){.b-card:hover{box-shadow:0 0 0 3px var(--bn-yc),0 0 18px 4px var(--bn-y),0 0 56px 10px rgba(255,214,10,.55),12px 12px 0 3px var(--b-violet-hi)}}
 .b-price--known .b-price__tag{box-shadow:3px 3px 0 var(--b-ink),0 0 14px rgba(255,214,10,.8)}
 
 @keyframes bn-pulse{from{opacity:1}to{opacity:.72}}
