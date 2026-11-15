@@ -218,3 +218,14 @@ html.lenis,html.lenis body{height:auto}
   .f-q__a{padding:0 14px 16px}
   .f-find__actions{flex-direction:column;align-items:stretch}
 }
+
+/* En-tête sur petits téléphones (< 480 px) : logo et liens se resserrent avec la largeur pour ne jamais sortir de l'écran. */
+@media (max-width:479px){
+  .b-nav{gap:6px;padding:10px 12px;flex-wrap:wrap}
+  .b-nav .lg-link{margin-left:2px}
+  .lg-sticker--s{padding:4px 9px;border-width:3px}
+  .lg-sticker--s .lg-sticker__name{font-size:clamp(17px,5.6vw,24px)}
+  .lg-sticker--s .lg-sticker__moon{width:26px;height:26px;right:-11px;top:-12px}
+  .b-links{gap:0}
+  .b-links a:not(.b-links__cta){padding:0 clamp(5px,1.8vw,10px);font-size:clamp(11px,3.3vw,13px);letter-spacing:.05em}
+}
