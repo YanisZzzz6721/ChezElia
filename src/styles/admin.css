@@ -142,17 +142,8 @@ textarea.adm-input{resize:vertical;line-height:1.4}
   .adm-hours__row .adm-check{grid-row:auto;grid-column:auto;justify-self:start}
 }
 
-/* ═════════ Tablette (≥ 900 px) : tout sur une ligne, formulaires en colonnes ═════════ */
+/* ═════════ Tablette (≥ 900 px) : formulaires en colonnes (le menu reste en bouton « Menu » jusqu'à 1099 px) ═════════ */
 @media (min-width:900px){
-  .adm-header{flex-wrap:nowrap;gap:24px;padding:0 28px}
-  .adm-navwrap{flex:1;margin-left:0}
-  .adm-burger,.adm-backdrop{display:none}
-  .adm-nav,.adm-nav[data-open=true]{position:static;display:flex;flex:1;flex-direction:row;align-items:center;padding:0;background:none;border:0;box-shadow:none;animation:none}
-  .adm-nav a{position:relative;min-height:48px;padding:0 10px;border:0;font-size:13px;white-space:nowrap;box-shadow:none}
-  .adm-nav a[aria-current=page]{box-shadow:none;padding-left:10px}
-  .adm-nav a[aria-current=page]::after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:4px;background:var(--b-yellow)}
-  .adm-nav__end{margin-left:auto;padding:0}
-  .adm-nav__end .adm-logout{width:auto;padding:0 10px;font-size:12px}
   .adm-main{padding:36px 28px 90px}
   .adm-card{padding:26px 28px;box-shadow:6px 6px 0 var(--b-violet)}
   .adm-product+.adm-actions{position:static;margin:14px 0 0;padding:0;border:0;background:none}
@@ -169,6 +160,16 @@ textarea.adm-input{resize:vertical;line-height:1.4}
 
 /* ═════════ Ordinateur (≥ 1100 px) : deux colonnes ═════════ */
 @media (min-width:1100px){
+  /* Menu en barre horizontale seulement à partir de 1100 px : 7 entrées + déconnexion ne tiennent pas en dessous (le bouton « Menu » reste actif de 900 à 1099 px). */
+  .adm-header{flex-wrap:nowrap;gap:24px;padding:0 28px}
+  .adm-navwrap{flex:1;margin-left:0}
+  .adm-burger,.adm-backdrop{display:none}
+  .adm-nav,.adm-nav[data-open=true]{position:static;display:flex;flex:1;flex-direction:row;align-items:center;padding:0;background:none;border:0;box-shadow:none;animation:none}
+  .adm-nav a{position:relative;min-height:48px;padding:0 10px;border:0;font-size:13px;white-space:nowrap;box-shadow:none}
+  .adm-nav a[aria-current=page]{box-shadow:none;padding-left:10px}
+  .adm-nav a[aria-current=page]::after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:4px;background:var(--b-yellow)}
+  .adm-nav__end{margin-left:auto;padding:0}
+  .adm-nav__end .adm-logout{width:auto;padding:0 10px;font-size:12px}
   .adm-nav__end .adm-logout{padding:0 14px;font-size:13px}
   .adm-nav a{padding:0 14px;font-size:14px}
   .adm-nav a[aria-current=page]{padding-left:14px}
@@ -229,3 +230,11 @@ textarea.adm-input{resize:vertical;line-height:1.4}
 .adm-pass__toggle[aria-pressed="true"]{color:#4a2c9a}
 .adm-pass__toggle:focus-visible{outline:3px solid var(--b-yellow);outline-offset:0}
 @media (hover:hover){.adm-pass__toggle:hover{background:var(--b-paper-2)}}
+
+/* Services : chaque service occupe toute la largeur, actions en dessous ; un service masqué est grisé et étiqueté */
+.adm-row--service{grid-template-columns:minmax(0,1fr)}
+.adm-row--service .adm-row__main{display:block}
+.adm-row--service .adm-row__main>form{min-width:0}
+.adm-row--service .adm-row__actions{grid-column:1/-1;justify-content:start}
+.adm-row--service-off{border:3px dashed #4a2c9a;background:var(--b-paper-2)}
+.adm-row__status{display:flex;margin:0 0 6px}

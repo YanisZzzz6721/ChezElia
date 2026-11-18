@@ -10,7 +10,7 @@ export default async function AdminBackupPage() {
       <section className="adm-card adm-form">
         <h2 className="adm-h2">Télécharger une sauvegarde</h2>
         <p className="adm-hint">
-          Le fichier contient les produits (corbeille comprise), les catégories, les textes et les horaires. Les photos restent
+          Le fichier contient les produits (corbeille comprise), les catégories, les services, les textes, les adresses des réseaux sociaux et les horaires. Les photos restent
           dans le stockage : le fichier garde seulement leur emplacement. Faites une sauvegarde avant une grosse session de saisie.
         </p>
         <div className="adm-actions">

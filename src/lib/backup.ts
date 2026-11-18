@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { FAQ_ANSWER_MAX_LENGTH, FAQ_QUESTION_MAX_LENGTH } from "@/content/faq";
+import { SERVICE_BODY_MAX_LENGTH, SERVICE_HIGHLIGHT_MAX_LENGTH, SERVICE_ICONS, SERVICE_TITLE_MAX_LENGTH } from "@/content/services";
+import { SOCIAL_NETWORKS, parseSocialUrl, type SocialNetworkName } from "@/content/social";
 
 export const BACKUP_VERSION = 1;
 
@@ -14,6 +16,26 @@ const faqSchema = z.object({
   answer: z.string().trim().min(1).max(FAQ_ANSWER_MAX_LENGTH),
   position: z.number().int(),
 });
+const serviceSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string().trim().min(1).max(SERVICE_TITLE_MAX_LENGTH),
+  body: z.string().trim().min(1).max(SERVICE_BODY_MAX_LENGTH),
+  highlight: z.string().trim().min(1).max(SERVICE_HIGHLIGHT_MAX_LENGTH).nullable(),
+  icon: z.enum(SERVICE_ICONS.map((icon) => icon.name) as [string, ...string[]]),
+  position: z.number().int(),
+  visible: z.boolean(),
+});
+
+/** Adresse d'un réseau social : null (masqué) ou URL https du bon domaine, renvoyée normalisée. */
+function socialUrlSchema(network: SocialNetworkName) {
+  return z.string().nullable().transform((value, context) => {
+    if (value === null) return null;
+    const parsed = parseSocialUrl(network, value);
+    if (parsed.ok) return parsed.data;
+    context.addIssue({ code: "custom", message: parsed.error });
+    return z.NEVER;
+  });
+}
 const productSchema = z
   .object({
     id: z.string().uuid(),
@@ -34,6 +56,7 @@ const settingSchema = z.discriminatedUnion("key", [
   z.object({ key: z.literal("tag"), value: z.string().trim().min(1).max(60) }),
   z.object({ key: z.literal("lead"), value: z.string().trim().min(1).max(300) }),
   z.object({ key: z.literal("phone_number"), value: z.string().min(1).max(30).nullable() }),
+  ...SOCIAL_NETWORKS.map(({ name, settingKey }) => z.object({ key: z.literal(settingKey), value: socialUrlSchema(name) })),
   z.object({
     key: z.literal("hero_photo"),
     value: z.object({ path: z.string().regex(PHOTO_PATH_PATTERN), width: z.number().int().positive(), height: z.number().int().positive() }).nullable(),
@@ -57,6 +80,8 @@ const backupSchema = z.object({
   hours: z.array(hoursSchema),
   /** Absente des sauvegardes antérieures à la FAQ : relue comme une FAQ vide. */
   faq: z.array(faqSchema).default([]),
+  /** Absente des sauvegardes antérieures aux services : relue comme une liste vide. */
+  services: z.array(serviceSchema).default([]),
 });
 
 export type BackupFile = z.infer<typeof backupSchema>;
@@ -64,7 +89,7 @@ export type BackupData = Omit<BackupFile, "version" | "exportedAt">;
 
 /**
  * Quoi : assemble le fichier de sauvegarde (JSON) à partir des données lues en base.
- * Input : data — catégories, produits (corbeille comprise), réglages, horaires, FAQ ; now — date d'export.
+ * Input : data — catégories, produits (corbeille comprise), réglages (réseaux sociaux compris), horaires, FAQ, services ; now — date d'export.
  * Output : l'objet sauvegarde, versionné et daté.
  * Effets de bord : aucun (fonction pure). Les photos elles-mêmes restent dans le stockage : seuls leurs chemins sont sauvegardés.
  */
@@ -78,6 +103,7 @@ function findConsistencyProblem(file: BackupFile): string | null {
   if (categoryIds.size !== file.categories.length) return "Sauvegarde invalide : doublon d'identifiant de catégorie.";
   if (new Set(file.products.map((p) => p.id)).size !== file.products.length) return "Sauvegarde invalide : doublon d'identifiant de produit.";
   if (new Set(file.faq.map((q) => q.id)).size !== file.faq.length) return "Sauvegarde invalide : doublon d'identifiant de question FAQ.";
+  if (new Set(file.services.map((s) => s.id)).size !== file.services.length) return "Sauvegarde invalide : doublon d'identifiant de service.";
   if (new Set(file.hours.map((h) => h.day_index)).size !== file.hours.length) return "Sauvegarde invalide : doublon de jour dans les horaires.";
   const orphan = file.products.find((p) => p.category_id !== null && !categoryIds.has(p.category_id));
   if (orphan) return `Sauvegarde invalide : le produit « ${orphan.title} » référence une catégorie absente du fichier.`;

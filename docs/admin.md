@@ -1,6 +1,6 @@
 # Administration — mise en route
 
-Panneau d'administration du site (`/admin`) : produits, catégories, textes, horaires, photo d'accueil, sauvegarde.
+Panneau d'administration du site (`/admin`) : produits, catégories, services, textes, réseaux sociaux, horaires, photo d'accueil, sauvegarde.
 Les données et les photos sont dans Supabase ; le site public les lit à chaque modification (et au plus toutes les minutes).
 
 ## Développement local
@@ -106,6 +106,31 @@ Vérifier aussi les règles locales (publicité en ligne, horaires de vente à e
 - La FAQ est incluse dans la sauvegarde ; une ancienne sauvegarde sans FAQ se restaure comme une FAQ vide.
 - Migration : `20261114000000_faq.sql` — à appliquer au cloud avec `npx supabase db push --remote` (d'abord `--dry-run`).
 - Le balisage « FAQPage » n'est pas ajouté : Google n'affiche plus les résultats enrichis FAQ pour un commerce, le texte visible suffit.
+
+## Services (onglet **Services**)
+
+Les propriétaires gèrent eux-mêmes la section « Nos services » du site : ce sont des cartes (titre, texte, mention facultative, icône).
+
+- **Ajouter** : remplir « Nouveau service » (titre 60 caractères maximum, texte 300, mention 30) puis « Ajouter le service ». Le nouveau service passe en dernier.
+- **Mention facultative** : une courte indication affichée sur la carte, par exemple un prix. Laissez vide s'il n'y en a pas ; rien n'est affiché dans ce cas.
+- **Icône** : à choisir dans la liste (Sandwich, Colis, Vinted).
+- **Visible sur le site** : décochée, la carte reste enregistrée dans l'administration (repérée « Masqué sur le site ») mais n'apparaît pas sur le site. Pratique pour préparer un service avant de l'annoncer.
+- **Modifier** : changer les champs puis « Enregistrer » (chaque service a son propre bouton).
+- **Ordre** : « ↑ Monter » et « ↓ Descendre » règlent l'ordre d'affichage sur le site.
+- **Supprimer** : demande une confirmation ; la suppression est définitive. Pour simplement retirer un service du site, décochez plutôt « Visible sur le site ».
+- La section n'apparaît pas sur le site tant qu'aucun service n'est visible. N'indiquez que des services réellement proposés.
+- Les modifications apparaissent sur le site en moins d'une minute. Les services sont inclus dans la sauvegarde.
+
+## Réseaux sociaux (onglet **Site**, bloc « Réseaux sociaux »)
+
+Trois champs : Instagram, TikTok et Snapchat.
+
+- Collez l'adresse complète du compte, telle qu'elle apparaît dans la barre d'adresse du navigateur (elle commence par `https://`), par exemple `https://www.instagram.com/votre-compte/`.
+- **Champ vide = le réseau n'est pas affiché** sur le site. Rien n'est pré-rempli : renseignez uniquement les comptes officiels de la boutique.
+- Une adresse refusée (autre site, `http://` sans le « s », espaces…) affiche un message précisant le réseau concerné ; rien n'est enregistré tant que les trois champs ne sont pas valides.
+- Chaque réseau n'accepte que sa propre adresse (instagram.com, tiktok.com, snapchat.com).
+- Les modifications apparaissent sur le site en moins d'une minute. Les adresses sont incluses dans la sauvegarde.
+- Migrations : `20261118000000_services.sql`, `20261118010000_social_settings.sql` et `20261118020000_services_contenu_initial.sql` — à appliquer au cloud avec `npx supabase db push --remote` (d'abord `--dry-run`).
 
 ## Section « Où nous trouver »
 

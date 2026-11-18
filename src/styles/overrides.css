@@ -229,3 +229,45 @@ html.lenis,html.lenis body{height:auto}
   .b-links{gap:0}
   .b-links a:not(.b-links__cta){padding:0 clamp(5px,1.8vw,10px);font-size:clamp(11px,3.3vw,13px);letter-spacing:.05em}
 }
+
+/* Section « Nos services » : cartes papier identiques, grille symétrique (2 colonnes, 1 sur téléphone). */
+.f-srv{position:relative;overflow:clip;padding:84px 32px 92px;background:var(--b-violet)}
+.f-srv__in{position:relative;z-index:2;max-width:980px;margin:0 auto;text-align:center}
+.f-srv__h{font-size:clamp(40px,6.4vw,76px)}
+.f-srv__list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;margin:44px 0 0;padding:0;list-style:none}
+.f-srv__card{display:flex;flex-direction:column;align-items:center;gap:10px;padding:30px 24px 28px;background:var(--b-paper);color:var(--b-ink);box-shadow:6px 6px 0 var(--b-ink),0 0 0 3px var(--bn-yc),0 0 14px 2px rgba(255,214,10,.35)}
+.f-srv__ic{display:grid;place-items:center;width:64px;height:64px;border:3px solid var(--b-ink);border-radius:50%;background:var(--b-yellow)}
+.f-srv__ic svg{width:34px;height:34px;fill:none;stroke:var(--b-ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* Vinted : sa couleur de marque, logo plein (pas de contour). */
+.f-srv__ic--vinted{background:#09b1ba}
+.f-srv__ic--vinted svg{width:30px;height:30px;fill:#fff;stroke:none}
+.f-srv__t{max-width:100%;margin:4px 0 0;font:400 30px/1.1 var(--font-anton),sans-serif;letter-spacing:.02em;text-transform:uppercase;text-wrap:balance;overflow-wrap:anywhere}
+.f-srv__p{margin:0;font:500 16px/1.55 var(--font-archivo),sans-serif;text-wrap:pretty;overflow-wrap:anywhere}
+.f-srv__hl{max-width:100%;overflow-wrap:anywhere;margin-top:auto;padding:6px 14px;background:var(--b-ink);color:var(--b-yellow);font:400 26px/1 var(--font-anton),sans-serif;letter-spacing:.04em;rotate:-2deg}
+@media (max-width:640px){
+  .f-srv{padding:56px 16px 64px}
+  .f-srv__list{grid-template-columns:1fr;gap:22px}
+  .f-srv__t{font-size:26px}
+}
+
+/* Liens légaux : le séparateur reste collé au premier lien (jamais seul en fin de ligne), chaque lien est insécable. */
+.s-foot__legal-item{display:inline-block;white-space:nowrap}
+.s-foot__sep{margin-left:.45em}
+
+/* Réseaux sociaux du pied de page : simples liens, aucun widget tiers. */
+.s-foot__social{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;width:min(100%,480px);margin:18px auto 6px;padding:0;list-style:none}
+.s-foot__social a{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 6px;border:2px solid var(--b-yellow);color:var(--b-yellow);font:800 13px/1 var(--font-archivo),sans-serif;letter-spacing:.08em;text-transform:uppercase;text-decoration:none}
+@media (hover:hover){.s-foot__social a:hover{background:var(--b-yellow);color:var(--b-ink)}}
+.s-foot__social a:focus-visible{outline:3px solid var(--b-yellow);outline-offset:3px}
+.s-foot__ic{flex:none;width:20px;height:20px}
+/* Téléphone : logo au-dessus du nom, pour garder trois colonnes égales sans couper le texte. */
+@media (max-width:480px){.s-foot__social{gap:8px}.s-foot__social a{flex-direction:column;gap:6px;min-height:64px;padding:8px 4px;font-size:11px;letter-spacing:.04em}.s-foot__ic{width:22px;height:22px}}
+
+/* Réseaux sociaux sous l'adresse du premier écran : petites pastilles rondes alignées à gauche, discrètes mais lumineuses. */
+.b-social{display:flex;gap:12px;margin:22px 0 0;padding:0;list-style:none}
+.b-social__a{display:grid;place-items:center;width:44px;height:44px;border:2px solid var(--b-yellow);border-radius:50%;background:rgba(18,5,31,.55);color:var(--b-yellow);box-shadow:0 0 12px rgba(255,214,10,.35);transition:background .2s,color .2s,translate .25s var(--spring,ease)}
+.b-social__ic{width:20px;height:20px}
+@media (hover:hover){.b-social__a:hover{background:var(--b-yellow);color:var(--b-ink);translate:0 -3px}}
+.b-social__a:active{translate:0 0;scale:.94}
+.b-social__a:focus-visible{outline:3px solid #fff;outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.b-social__a{transition:none}}

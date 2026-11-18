@@ -41,6 +41,16 @@ describe("buildStoreJsonLd", () => {
     expect(buildStoreJsonLd(SAMPLE_HOURS, null, { siteUrl: "https://chez-elia.fr", imageUrl: "https://cdn.test/a.webp" })).toMatchObject({ url: "https://chez-elia.fr", image: "https://cdn.test/a.webp" });
   });
 
+  it("ajoute sameAs avec l'adresse exacte de chaque réseau quand il y en a", () => {
+    const socialUrls = ["https://www.instagram.com/compte-test/", "https://www.tiktok.com/@compte-test"];
+    expect(buildStoreJsonLd(SAMPLE_HOURS, null, { socialUrls })).toMatchObject({ sameAs: socialUrls });
+  });
+
+  it("omet sameAs sans réseau (propriété absente, pas un tableau vide)", () => {
+    expect(buildStoreJsonLd(SAMPLE_HOURS)).not.toHaveProperty("sameAs");
+    expect(buildStoreJsonLd(SAMPLE_HOURS, null, { socialUrls: [] })).not.toHaveProperty("sameAs");
+  });
+
   it("omet le jour fermé et garde 6 jours d'ouverture", () => {
     const days = jsonLd.openingHoursSpecification.map((spec) => spec.dayOfWeek);
     expect(days).toEqual(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]);

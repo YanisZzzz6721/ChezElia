@@ -202,3 +202,124 @@ describe("questions fréquentes (faq_items)", () => {
     expect(data?.[0]?.user_id).toBe(createdUserIds[0]);
   });
 });
+
+describe("services (services)", () => {
+  let visibleServiceId = "";
+  let hiddenServiceId = "";
+
+  beforeAll(async () => {
+    const rows = [
+      { title: "TEST service visible", body: "Texte.", icon: "sandwich", position: 900, visible: true },
+      { title: "TEST service masqué", body: "Texte.", icon: "parcel", position: 901, visible: false },
+    ];
+    const { data, error } = await admin.from("services").insert(rows).select("id, title");
+    if (error) throw new Error(`Préparation des services de test échouée : ${error.message}`);
+    visibleServiceId = data.find((r) => r.title === "TEST service visible")!.id;
+    hiddenServiceId = data.find((r) => r.title === "TEST service masqué")!.id;
+  });
+
+  afterAll(async () => {
+    await service.from("services").delete().like("title", "TEST%");
+  });
+
+  it("anonyme : lit les services visibles mais PAS les masqués", async () => {
+    const { data, error } = await anon.from("services").select("id").in("id", [visibleServiceId, hiddenServiceId]);
+    expect(error).toBeNull();
+    expect(data?.map((r) => r.id)).toEqual([visibleServiceId]);
+  });
+
+  it("utilisateur connecté sans rôle admin : lit les services visibles (pas les masqués), n'écrit rien", async () => {
+    const { data } = await stranger.from("services").select("id").in("id", [visibleServiceId, hiddenServiceId]);
+    expect(data?.map((r) => r.id)).toEqual([visibleServiceId]);
+    const newService = { title: "TEST étranger", body: "x", icon: "sandwich", position: 0 };
+    expect((await stranger.from("services").insert(newService)).error).not.toBeNull();
+    const update = await stranger.from("services").update({ body: "piraté" }).eq("id", visibleServiceId).select();
+    expect(update.error !== null || (update.data ?? []).length === 0).toBe(true);
+    const del = await stranger.from("services").delete().eq("id", visibleServiceId).select();
+    expect(del.error !== null || (del.data ?? []).length === 0).toBe(true);
+  });
+
+  it("anonyme : aucune écriture (ajout, modification, suppression)", async () => {
+    expect((await anon.from("services").insert({ title: "TEST pirate", body: "x", icon: "sandwich", position: 0 })).error).not.toBeNull();
+    const update = await anon.from("services").update({ body: "piraté" }).eq("id", visibleServiceId).select();
+    expect(update.error !== null || (update.data ?? []).length === 0).toBe(true);
+    const del = await anon.from("services").delete().eq("id", visibleServiceId).select();
+    expect(del.error !== null || (del.data ?? []).length === 0).toBe(true);
+    const { data: still } = await service.from("services").select("body").eq("id", visibleServiceId).single();
+    expect(still?.body).toBe("Texte.");
+  });
+
+  it("administrateur : voit tout, y compris les masqués, et peut modifier ; la modification est journalisée", async () => {
+    const { data } = await admin.from("services").select("id").in("id", [visibleServiceId, hiddenServiceId]);
+    expect(new Set(data?.map((r) => r.id))).toEqual(new Set([visibleServiceId, hiddenServiceId]));
+    expect((await admin.from("services").update({ highlight: "2,50 €" }).eq("id", visibleServiceId)).error).toBeNull();
+    const { data: audit } = await service.from("audit_log").select("user_id").eq("table_name", "services").eq("row_id", visibleServiceId).eq("action", "UPDATE");
+    expect(audit?.[0]?.user_id).toBe(createdUserIds[0]);
+  });
+
+  it("administrateur : peut supprimer un service", async () => {
+    const { data: created } = await admin.from("services").insert({ title: "TEST à supprimer", body: "x", icon: "vinted", position: 902 }).select("id").single();
+    const del = await admin.from("services").delete().eq("id", created!.id).select();
+    expect(del.error).toBeNull();
+    expect(del.data).toHaveLength(1);
+  });
+
+  it("la base refuse un titre vide, un texte vide, une mention vide ou trop longue, une icône inconnue", async () => {
+    const valid = { title: "TEST contrainte", body: "Texte.", icon: "sandwich", position: 903 };
+    expect((await admin.from("services").insert({ ...valid, title: "   " })).error).not.toBeNull();
+    expect((await admin.from("services").insert({ ...valid, title: "t".repeat(61) })).error).not.toBeNull();
+    expect((await admin.from("services").insert({ ...valid, body: "" })).error).not.toBeNull();
+    expect((await admin.from("services").insert({ ...valid, body: "b".repeat(301) })).error).not.toBeNull();
+    expect((await admin.from("services").insert({ ...valid, highlight: "  " })).error).not.toBeNull();
+    expect((await admin.from("services").insert({ ...valid, highlight: "h".repeat(31) })).error).not.toBeNull();
+    expect((await admin.from("services").insert({ ...valid, icon: "rocket" })).error).not.toBeNull();
+    // Le titre commence par « TEST » (60 caractères au total) : le nettoyage `like("TEST%")` de afterAll supprime ainsi cette ligne.
+    const maxValues = { ...valid, title: `TEST${"t".repeat(56)}`, body: "b".repeat(300), highlight: "h".repeat(30) };
+    expect((await admin.from("services").insert(maxValues)).error).toBeNull();
+  });
+});
+
+describe("réseaux sociaux (site_settings)", () => {
+  const socialKeys = ["social_instagram", "social_tiktok", "social_snapchat"];
+  let previousRows: { key: string; value: unknown }[] = [];
+
+  beforeAll(async () => {
+    const { data } = await service.from("site_settings").select("key, value").in("key", socialKeys);
+    previousRows = data ?? [];
+  });
+
+  afterAll(async () => {
+    await service.from("site_settings").delete().in("key", socialKeys);
+    if (previousRows.length > 0) await service.from("site_settings").insert(previousRows);
+  });
+
+  it("l'administrateur peut enregistrer une adresse valide et la vider (null)", async () => {
+    const save = (key: string, value: string | null) => admin.from("site_settings").upsert({ key, value }, { onConflict: "key" });
+    expect((await save("social_instagram", "https://www.instagram.com/chez.elia/")).error).toBeNull();
+    expect((await save("social_tiktok", "https://www.tiktok.com/@chez.elia")).error).toBeNull();
+    expect((await save("social_snapchat", "https://www.snapchat.com/add/chezelia")).error).toBeNull();
+    expect((await save("social_instagram", null)).error).toBeNull();
+    const { data } = await anon.from("site_settings").select("value").eq("key", "social_tiktok").single();
+    expect(data?.value).toBe("https://www.tiktok.com/@chez.elia");
+  });
+
+  it("la base refuse javascript:, http:, un autre domaine, un domaine piège et une valeur qui n'est pas un texte", async () => {
+    const save = (key: string, value: unknown) => admin.from("site_settings").upsert({ key, value }, { onConflict: "key" });
+    expect((await save("social_instagram", "javascript:alert(1)")).error).not.toBeNull();
+    expect((await save("social_instagram", "http://www.instagram.com/x")).error).not.toBeNull();
+    expect((await save("social_instagram", "https://www.tiktok.com/@x")).error).not.toBeNull();
+    expect((await save("social_instagram", "https://instagram.com.evil.fr/x")).error).not.toBeNull();
+    expect((await save("social_instagram", "https://user:pass@www.instagram.com/x")).error).not.toBeNull();
+    expect((await save("social_instagram", 42)).error).not.toBeNull();
+  });
+
+  it("les quatre clés d'origine restent acceptées, une clé inconnue reste refusée", async () => {
+    expect((await admin.from("site_settings").upsert({ key: "phone_number", value: null }, { onConflict: "key" })).error).toBeNull();
+    expect((await admin.from("site_settings").insert({ key: "social_facebook", value: "https://www.facebook.com/x" })).error).not.toBeNull();
+  });
+
+  it("un utilisateur sans rôle admin ne peut pas modifier une adresse sociale", async () => {
+    const update = await stranger.from("site_settings").upsert({ key: "social_instagram", value: "https://www.instagram.com/pirate/" }, { onConflict: "key" });
+    expect(update.error).not.toBeNull();
+  });
+});

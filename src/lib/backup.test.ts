@@ -4,6 +4,7 @@ import { BACKUP_VERSION, buildBackup, parseBackup, type BackupData } from "./bac
 const CAT = "11111111-1111-4111-8111-111111111111";
 const PRODUCT = "22222222-2222-4222-8222-222222222222";
 const FAQ = "44444444-4444-4444-8444-444444444444";
+const SERVICE = "55555555-5555-4555-8555-555555555555";
 const PHOTO = "products/33333333-3333-4333-8333-333333333333.webp";
 
 const data: BackupData = {
@@ -14,6 +15,7 @@ const data: BackupData = {
   settings: [{ key: "tag", value: "Ouvert tard" }],
   hours: [{ day_index: 0, is_closed: false, opens_at: "15h30", closes_at: "00h30" }],
   faq: [{ id: FAQ, question: "Livrez-vous ?", answer: "Non.", position: 0 }],
+  services: [{ id: SERVICE, title: "Sandwichs frais", body: "Des sandwichs.", highlight: "2,50 €", icon: "sandwich", position: 0, visible: true }],
 };
 
 describe("sauvegarde : aller-retour", () => {
@@ -29,7 +31,7 @@ describe("sauvegarde : aller-retour", () => {
   });
 
   it("accepte une base vide (aucun produit)", () => {
-    const empty = { categories: [], products: [], settings: [], hours: [], faq: [] };
+    const empty = { categories: [], products: [], settings: [], hours: [], faq: [], services: [] };
     expect(parseBackup(JSON.stringify(buildBackup(empty, new Date())))).toMatchObject({ ok: true });
   });
 });
@@ -115,5 +117,53 @@ describe("sauvegarde : questions fréquentes (FAQ)", () => {
     expect(parseBackup(backupText({ faq: [{ id: FAQ, question: "Q", answer: "a".repeat(1001), position: 0 }] }))).toMatchObject({ ok: false });
     const twice = { id: FAQ, question: "Q", answer: "R", position: 0 };
     expect(parseBackup(backupText({ faq: [twice, twice] }))).toMatchObject({ ok: false, error: expect.stringMatching(/FAQ/) });
+  });
+});
+
+describe("sauvegarde : services", () => {
+  const backupText = (overrides: object) => JSON.stringify({ ...buildBackup(data, new Date()), ...overrides });
+  const service = { id: SERVICE, title: "Vinted", body: "Colis.", highlight: null, icon: "vinted", position: 1, visible: false };
+
+  it("relit une ancienne sauvegarde sans services comme une liste vide", () => {
+    const { services: _omitted, ...withoutServices } = buildBackup(data, new Date());
+    const result = parseBackup(JSON.stringify(withoutServices));
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.data.services).toEqual([]);
+  });
+
+  it("restitue les services exportés, mention absente et service masqué compris", () => {
+    const result = parseBackup(backupText({ services: [service] }));
+    expect(result).toMatchObject({ ok: true, data: { services: [service] } });
+  });
+
+  it("rejette un doublon d'identifiant", () => {
+    expect(parseBackup(backupText({ services: [service, service] }))).toMatchObject({ ok: false, error: expect.stringMatching(/service/i) });
+  });
+
+  it("rejette une icône inconnue, un titre vide, une mention ou un texte trop longs", () => {
+    expect(parseBackup(backupText({ services: [{ ...service, icon: "rocket" }] }))).toMatchObject({ ok: false });
+    expect(parseBackup(backupText({ services: [{ ...service, title: " " }] }))).toMatchObject({ ok: false });
+    expect(parseBackup(backupText({ services: [{ ...service, highlight: "h".repeat(31) }] }))).toMatchObject({ ok: false });
+    expect(parseBackup(backupText({ services: [{ ...service, body: "b".repeat(301) }] }))).toMatchObject({ ok: false });
+    expect(parseBackup(backupText({ services: [{ ...service, id: "pas-un-uuid" }] }))).toMatchObject({ ok: false });
+  });
+});
+
+describe("sauvegarde : réseaux sociaux", () => {
+  const settingsText = (settings: object[]) => JSON.stringify({ ...buildBackup(data, new Date()), settings });
+
+  it("accepte des adresses valides ou absentes (null)", () => {
+    const settings = [
+      { key: "social_instagram", value: "https://www.instagram.com/x/" },
+      { key: "social_tiktok", value: null },
+      { key: "social_snapchat", value: "https://www.snapchat.com/add/x" },
+    ];
+    expect(parseBackup(settingsText(settings))).toMatchObject({ ok: true, data: { settings } });
+  });
+
+  it("rejette une adresse invalide (javascript:, http, mauvais domaine, domaine d'un autre réseau)", () => {
+    for (const value of ["javascript:alert(1)", "http://www.instagram.com/x", "https://evil.example/x", "https://www.tiktok.com/@x", "https://instagram.com.evil.fr/x", 12]) {
+      expect(parseBackup(settingsText([{ key: "social_instagram", value }]))).toMatchObject({ ok: false });
+    }
   });
 });

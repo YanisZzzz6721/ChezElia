@@ -1,13 +1,16 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_SETTINGS,
   mapCategoryRows,
   mapFaqRows,
   mapHoursRows,
   mapProductRow,
+  mapServiceRows,
   mapSettingRows,
+  mapSocialLinks,
   type HoursRow,
   type ProductRow,
+  type ServiceRow,
 } from "./siteData";
 
 const toUrl = (path: string) => `https://cdn.test/${path}`;
@@ -101,5 +104,90 @@ describe("mapFaqRows", () => {
 
   it("accepte une liste vide (la section n'est alors pas affichée)", () => {
     expect(mapFaqRows([])).toEqual([]);
+  });
+});
+
+const serviceRow = (overrides: Partial<ServiceRow> = {}): ServiceRow => ({
+  id: "s1", title: "Sandwichs frais", body: "Des sandwichs.", highlight: "2,50 €", icon: "sandwich", position: 0, visible: true, ...overrides,
+});
+
+describe("mapServiceRows", () => {
+  it("trie par position et renvoie les champs utiles à l'affichage", () => {
+    const rows = [serviceRow({ id: "b", title: "Vinted", icon: "vinted", highlight: null, position: 1 }), serviceRow({ id: "a", position: 0 })];
+    expect(mapServiceRows(rows)).toEqual([
+      { id: "a", title: "Sandwichs frais", body: "Des sandwichs.", highlight: "2,50 €", icon: "sandwich", visible: true },
+      { id: "b", title: "Vinted", body: "Des sandwichs.", highlight: null, icon: "vinted", visible: true },
+    ]);
+  });
+
+  it("accepte une liste vide (la section n'est alors pas affichée)", () => {
+    expect(mapServiceRows([])).toEqual([]);
+  });
+
+  it("ignore les lignes invalides en les signalant avec leur identifiant, sans toucher aux bonnes", () => {
+    const reportInvalidRow = vi.fn();
+    const rows = [
+      serviceRow({ id: "ok", position: 2 }),
+      serviceRow({ id: "bad-icon", icon: "rocket", position: 0 }),
+      serviceRow({ id: "bad-title", title: "  ", position: 1 }),
+      serviceRow({ id: "bad-highlight", highlight: "x".repeat(31), position: 3 }),
+      serviceRow({ id: "bad-body", body: "x".repeat(301), position: 4 }),
+    ];
+    expect(mapServiceRows(rows, reportInvalidRow).map((s) => s.id)).toEqual(["ok"]);
+    expect(reportInvalidRow.mock.calls.map(([row]) => row.id)).toEqual(["bad-icon", "bad-title", "bad-highlight", "bad-body"]);
+    expect(reportInvalidRow.mock.calls[0]?.[1]).toEqual(expect.any(String));
+  });
+
+  it("signale par défaut avec console.error (jamais en silence)", () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(mapServiceRows([serviceRow({ id: "bad", icon: "rocket" })])).toEqual([]);
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining("bad"));
+    spy.mockRestore();
+  });
+
+  it("accepte les valeurs aux bornes (titre 60, texte 300, mention 30)", () => {
+    const row = serviceRow({ title: "t".repeat(60), body: "b".repeat(300), highlight: "h".repeat(30) });
+    expect(mapServiceRows([row])).toHaveLength(1);
+  });
+});
+
+describe("mapSocialLinks", () => {
+  it("renvoie les réseaux valides dans l'ordre Instagram, TikTok, Snapchat", () => {
+    const rows = [
+      { key: "social_snapchat", value: "https://www.snapchat.com/add/x" },
+      { key: "social_instagram", value: "https://www.instagram.com/x/" },
+    ];
+    expect(mapSocialLinks(rows)).toEqual([
+      { network: "instagram", label: "Instagram", url: "https://www.instagram.com/x/" },
+      { network: "snapchat", label: "Snapchat", url: "https://www.snapchat.com/add/x" },
+    ]);
+  });
+
+  it("ignore les valeurs absentes (null) sans rien signaler", () => {
+    const reportInvalid = vi.fn();
+    expect(mapSocialLinks([{ key: "social_tiktok", value: null }], reportInvalid)).toEqual([]);
+    expect(reportInvalid).not.toHaveBeenCalled();
+  });
+
+  it("ignore et signale une valeur invalide en base (mauvais domaine, javascript:, pas un texte)", () => {
+    const reportInvalid = vi.fn();
+    const rows = [
+      { key: "social_instagram", value: "javascript:alert(1)" },
+      { key: "social_tiktok", value: "https://instagram.com.evil.fr/x" },
+      { key: "social_snapchat", value: 42 },
+    ];
+    expect(mapSocialLinks(rows, reportInvalid)).toEqual([]);
+    expect(reportInvalid).toHaveBeenCalledTimes(3);
+    expect(reportInvalid.mock.calls[0]?.[0]).toBe("social_instagram");
+  });
+
+  it("n'examine que les clés de réseaux sociaux", () => {
+    expect(mapSocialLinks([{ key: "tag", value: "Bonjour" }])).toEqual([]);
+  });
+});
+
+describe("mapSettingRows et réseaux sociaux", () => {
+  it("laisse passer les clés de réseaux sociaux (traitées par mapSocialLinks) sans modifier les réglages", () => {
+    expect(mapSettingRows([{ key: "social_instagram", value: "https://www.instagram.com/x/" }])).toEqual(DEFAULT_SETTINGS);
   });
 });

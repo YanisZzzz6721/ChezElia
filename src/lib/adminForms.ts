@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { FAQ_ANSWER_MAX_LENGTH, FAQ_QUESTION_MAX_LENGTH } from "@/content/faq";
+import { SERVICE_BODY_MAX_LENGTH, SERVICE_HIGHLIGHT_MAX_LENGTH, SERVICE_ICONS, SERVICE_TITLE_MAX_LENGTH, type ServiceIconName } from "@/content/services";
+import { SOCIAL_NETWORKS, parseSocialUrl, type SocialNetworkName } from "@/content/social";
 import { parsePriceInput } from "./priceInput";
 import { normalizePhoneInput } from "./phone";
 import { DAY_NAMES } from "./siteData";
@@ -192,4 +194,70 @@ export function parseFaqEditForm(formData: FormData): ParseResult<FaqInput & { i
   if (!id.success) return { ok: false, error: firstIssue(id.error) };
   const faq = parseFaqForm(formData);
   return faq.ok ? { ok: true, data: { id: id.data, ...faq.data } } : faq;
+}
+
+export interface ServiceInput {
+  title: string;
+  body: string;
+  /** null = aucune mention mise en avant. */
+  highlight: string | null;
+  icon: ServiceIconName;
+  visible: boolean;
+}
+
+const serviceSchema = z.object({
+  title: z.string().trim().min(1, "Le titre du service est obligatoire.").max(SERVICE_TITLE_MAX_LENGTH, `Le titre est trop long (${SERVICE_TITLE_MAX_LENGTH} caractères maximum).`),
+  body: z.string().trim().min(1, "Le texte du service est obligatoire.").max(SERVICE_BODY_MAX_LENGTH, `Le texte est trop long (${SERVICE_BODY_MAX_LENGTH} caractères maximum).`),
+  highlight: z.string().trim().max(SERVICE_HIGHLIGHT_MAX_LENGTH, `La mention est trop longue (${SERVICE_HIGHLIGHT_MAX_LENGTH} caractères maximum).`),
+  icon: z.enum(SERVICE_ICONS.map((icon) => icon.name) as [ServiceIconName, ...ServiceIconName[]], { error: "Choisissez une icône dans la liste." }),
+});
+
+/**
+ * Quoi : lit et valide un service (carte de la section « Nos services »).
+ * Input : formData — champs title, body, highlight (facultatif), icon (« sandwich », « parcel » ou « vinted ») et visible (case cochée = « on »).
+ * Output : { ok: true, data } avec textes nettoyés, mention null si vide et visibilité ; sinon { ok: false, error } lisible.
+ * Effets de bord : aucun (fonction pure).
+ */
+export function parseServiceForm(formData: FormData): ParseResult<ServiceInput> {
+  const parsed = serviceSchema.safeParse({
+    title: readText(formData, "title"),
+    body: readText(formData, "body"),
+    highlight: readText(formData, "highlight"),
+    icon: readText(formData, "icon"),
+  });
+  if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
+  const { highlight, ...rest } = parsed.data;
+  return { ok: true, data: { ...rest, highlight: highlight === "" ? null : highlight, visible: formData.get("visible") === "on" } };
+}
+
+/**
+ * Quoi : lit et valide la modification d'un service existant.
+ * Input : formData — champs id, title, body, highlight, icon et visible.
+ * Output : { ok: true, data: { id, ...service } } ou { ok: false, error } lisible.
+ * Effets de bord : aucun (fonction pure).
+ */
+export function parseServiceEditForm(formData: FormData): ParseResult<ServiceInput & { id: string }> {
+  const id = z.string().uuid("Identifiant de service invalide.").safeParse(readText(formData, "id"));
+  if (!id.success) return { ok: false, error: firstIssue(id.error) };
+  const service = parseServiceForm(formData);
+  return service.ok ? { ok: true, data: { id: id.data, ...service.data } } : service;
+}
+
+/** Adresses des réseaux sociaux : null = réseau masqué. */
+export type SocialSettingsInput = Record<SocialNetworkName, string | null>;
+
+/**
+ * Quoi : lit et valide les adresses des réseaux sociaux.
+ * Input : formData — champs instagram, tiktok, snapchat (adresse https complète, ou vide pour masquer le réseau).
+ * Output : { ok: true, data } avec les trois adresses normalisées (null si vide) ; sinon { ok: false, error } nommant le réseau fautif.
+ * Effets de bord : aucun (fonction pure).
+ */
+export function parseSocialSettingsForm(formData: FormData): ParseResult<SocialSettingsInput> {
+  const data: SocialSettingsInput = { instagram: null, tiktok: null, snapchat: null };
+  for (const { name } of SOCIAL_NETWORKS) {
+    const parsed = parseSocialUrl(name, readText(formData, name));
+    if (!parsed.ok) return { ok: false, error: parsed.error };
+    data[name] = parsed.data;
+  }
+  return { ok: true, data };
 }

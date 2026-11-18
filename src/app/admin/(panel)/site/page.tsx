@@ -1,12 +1,14 @@
-import { HeroPhotoForm, HoursForm, SettingsForm } from "@/components/admin/SiteForms";
+import { HeroPhotoForm, HoursForm, SettingsForm, SocialLinksForm } from "@/components/admin/SiteForms";
 import { requireAdmin } from "@/lib/admin/auth";
+import { fetchSocialUrlsForAdmin } from "@/lib/siteQueries";
 import { mapHoursRows, mapSettingRows, type HoursRow, type SettingRow } from "@/lib/siteData";
 
 export default async function AdminSitePage() {
   const { supabase } = await requireAdmin();
-  const [settingsResult, hoursResult] = await Promise.all([
+  const [settingsResult, hoursResult, socialUrls] = await Promise.all([
     supabase.from("site_settings").select("key, value"),
     supabase.from("opening_hours").select("day_index, is_closed, opens_at, closes_at"),
+    fetchSocialUrlsForAdmin(supabase),
   ]);
   if (settingsResult.error) throw new Error(`Lecture des réglages impossible : ${settingsResult.error.message}`);
   if (hoursResult.error) throw new Error(`Lecture des horaires impossible : ${hoursResult.error.message}`);
@@ -22,6 +24,7 @@ export default async function AdminSitePage() {
         <div className="adm-cols__main">
           <HeroPhotoForm currentUrl={heroUrl} />
           <SettingsForm tag={settings.tag} lead={settings.lead} phone={settings.phoneNumber ?? ""} />
+          <SocialLinksForm urls={socialUrls} />
         </div>
         <div className="adm-cols__side">
       <HoursForm hours={hours.map((day) => (day.isClosed ? { isClosed: true, opensAt: "", closesAt: "" } : { isClosed: false, opensAt: day.opensAt, closesAt: day.closesAt }))} />

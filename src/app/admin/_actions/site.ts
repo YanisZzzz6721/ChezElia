@@ -1,10 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { SOCIAL_NETWORKS } from "@/content/social";
 import { requireAdmin } from "@/lib/admin/auth";
 import { readPhotoFile, removePhoto, uploadPhoto, type StoredPhoto } from "@/lib/admin/photoStorage";
 import { toActionError, type ActionResult } from "@/lib/admin/result";
-import { parseHoursForm, parseSettingsForm } from "@/lib/adminForms";
+import { parseHoursForm, parseSettingsForm, parseSocialSettingsForm } from "@/lib/adminForms";
 
 function refreshPages(): void {
   revalidatePath("/");
@@ -32,6 +33,25 @@ export async function saveSettingsAction(_previous: ActionResult, formData: Form
   if (error) return { ok: false, error: `Enregistrement impossible : ${error.message}` };
   refreshPages();
   return { ok: true, message: "Textes enregistrés." };
+}
+
+/**
+ * Quoi : enregistre les adresses Instagram, TikTok et Snapchat.
+ * Input : _previous — état précédent (useActionState) ; formData — champs instagram, tiktok, snapchat (adresse https complète, ou vide).
+ * Output : { ok: true, message } ou { ok: false, error } nommant le réseau dont l'adresse est refusée (rien n'est alors enregistré).
+ * Effets de bord : vérifie l'administrateur ; écrit 3 réglages « social_* » en base (journalisés) ; rafraîchit les pages.
+ *   Une adresse vide enregistre la valeur nulle : le réseau n'est plus affiché sur le site.
+ */
+export async function saveSocialLinksAction(_previous: ActionResult, formData: FormData): Promise<ActionResult> {
+  const { supabase } = await requireAdmin();
+  const input = parseSocialSettingsForm(formData);
+  if (!input.ok) return { ok: false, error: input.error };
+
+  const rows = SOCIAL_NETWORKS.map(({ name, settingKey }) => ({ key: settingKey, value: input.data[name] }));
+  const { error } = await supabase.from("site_settings").upsert(rows, { onConflict: "key" });
+  if (error) return { ok: false, error: `Enregistrement des réseaux sociaux impossible : ${error.message}` };
+  refreshPages();
+  return { ok: true, message: "Réseaux sociaux enregistrés." };
 }
 
 /**
