@@ -33,11 +33,11 @@ export function toSchemaTime(frenchTime: string): string {
 /**
  * Quoi : construit les données structurées schema.org du commerce (ConvenienceStore).
  * Input : openingHours — les horaires de la semaine (les jours fermés sont omis) ; phoneNumber — numéro public ou null ;
- *   extras — adresse du site (https) et URL de la photo d'accueil, si connues.
- * Output : l'objet JSON-LD. Téléphone, image et coordonnées sont omis tant qu'ils ne sont pas fournis.
+ *   extras — adresse du site (https), URL de la photo d'accueil et adresses des réseaux sociaux (`sameAs`), si connues.
+ * Output : l'objet JSON-LD. Téléphone, image, réseaux (`sameAs`) et coordonnées sont omis tant qu'ils ne sont pas fournis.
  * Effets de bord : aucun (fonction pure). Lève une Error si un nom de jour ou une heure est invalide.
  */
-export function buildStoreJsonLd(openingHours: readonly DayHours[], phoneNumber: string | null = null, extras: { siteUrl?: string | null; imageUrl?: string | null } = {}) {
+export function buildStoreJsonLd(openingHours: readonly DayHours[], phoneNumber: string | null = null, extras: { siteUrl?: string | null; imageUrl?: string | null; socialUrls?: readonly string[] } = {}) {
   const openingHoursSpecification = openingHours
     .filter((hours) => !hours.isClosed)
     .map((hours) => {
@@ -58,6 +58,7 @@ export function buildStoreJsonLd(openingHours: readonly DayHours[], phoneNumber:
     ...(phoneNumber ? { telephone: toTelHref(phoneNumber).slice("tel:".length) } : {}),
     ...(extras.siteUrl ? { url: extras.siteUrl } : {}),
     ...(extras.imageUrl ? { image: extras.imageUrl } : {}),
+    ...(extras.socialUrls && extras.socialUrls.length > 0 ? { sameAs: [...extras.socialUrls] } : {}),
     address: {
       "@type": "PostalAddress",
       streetAddress: "4 rue Sédillot",

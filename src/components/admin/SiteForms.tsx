@@ -1,6 +1,8 @@
 "use client";
 
-import { saveHeroPhotoAction, saveHoursAction, saveSettingsAction } from "@/app/admin/_actions/site";
+import { Fragment } from "react";
+import { saveHeroPhotoAction, saveHoursAction, saveSettingsAction, saveSocialLinksAction } from "@/app/admin/_actions/site";
+import { SOCIAL_NETWORKS, SOCIAL_URL_MAX_LENGTH, type SocialNetworkName } from "@/content/social";
 import { DAY_NAMES } from "@/lib/siteData";
 import { ActionForm } from "./ActionForm";
 import { FormMessage } from "./FormMessage";
@@ -27,6 +29,42 @@ export function SettingsForm({ tag, lead, phone }: SettingsFormProps) {
       <p className="adm-hint">Laissez vide tant que le numéro n&rsquo;est pas connu : le bouton « Appeler » restera désactivé.</p>
       <FormMessage />
       <div className="adm-actions"><SubmitButton pendingLabel="Enregistrement…">Enregistrer les textes</SubmitButton></div>
+    </ActionForm>
+  );
+}
+
+/** Exemples d'adresses affichés dans les champs vides (aucun compte réel : ce sont des modèles). */
+const SOCIAL_PLACEHOLDERS: Record<SocialNetworkName, string> = {
+  instagram: "https://www.instagram.com/votre-compte/",
+  tiktok: "https://www.tiktok.com/@votre-compte",
+  snapchat: "https://www.snapchat.com/add/votre-compte",
+};
+
+/** Formulaire des adresses Instagram, TikTok et Snapchat (champ vide = réseau non affiché sur le site). */
+export function SocialLinksForm({ urls }: { urls: Record<SocialNetworkName, string | null> }) {
+  return (
+    <ActionForm action={saveSocialLinksAction} className="adm-card adm-form">
+      <h2 className="adm-h2">Réseaux sociaux</h2>
+      <p className="adm-hint">Collez l&rsquo;adresse complète du compte, telle qu&rsquo;elle apparaît dans la barre d&rsquo;adresse du navigateur (elle commence par https://). Laissez vide pour ne pas afficher le réseau.</p>
+      {SOCIAL_NETWORKS.map(({ name, label }) => (
+        <Fragment key={name}>
+          <label className="adm-label" htmlFor={`social-${name}`}>{label}</label>
+          <input
+            className="adm-input"
+            id={`social-${name}`}
+            name={name}
+            defaultValue={urls[name] ?? ""}
+            maxLength={SOCIAL_URL_MAX_LENGTH}
+            inputMode="url"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            placeholder={SOCIAL_PLACEHOLDERS[name]}
+          />
+        </Fragment>
+      ))}
+      <FormMessage />
+      <div className="adm-actions"><SubmitButton pendingLabel="Enregistrement…">Enregistrer les réseaux</SubmitButton></div>
     </ActionForm>
   );
 }

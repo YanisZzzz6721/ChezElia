@@ -1,9 +1,11 @@
 import { SITE } from "@/content/site";
+import type { SocialLink } from "@/content/social";
 import { ActionButtons } from "./ActionButtons";
 import { CallButton } from "./CallButton";
 import { Address } from "./Address";
 import { Logo } from "./Logo";
 import { NeonShape } from "./NeonShape";
+import { SocialIconRow } from "./SocialIconRow";
 import { StorePhotoFrame, type StorePhotoFrameProps } from "./StorePhotoFrame";
 
 const MAIN_NAV = [
@@ -69,10 +71,12 @@ interface HeroProps {
   lead: string;
   phoneNumber: string | null;
   photo: StorePhotoFrameProps["photo"];
+  /** Réseaux sociaux affichés sous l'adresse (absent ou vide = aucune rangée). */
+  socialLinks?: readonly SocialLink[];
 }
 
 /** Premier écran : accroche, boutons, photo d'accueil (cadre « Photo à venir » tant qu'aucune n'est publiée). */
-export function Hero({ tag, lead, phoneNumber, photo }: HeroProps) {
+export function Hero({ tag, lead, phoneNumber, photo, socialLinks = [] }: HeroProps) {
   return (
     <section className="b-hero p-hero" id="top">
       <Header />
@@ -87,6 +91,7 @@ export function Hero({ tag, lead, phoneNumber, photo }: HeroProps) {
           <p className="b-lead">{lead}</p>
           <ActionButtons phoneNumber={phoneNumber} />
           <Address />
+          <SocialIconRow links={socialLinks} />
         </div>
         <PhotoStage photo={photo} />
       </div>

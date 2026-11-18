@@ -30,7 +30,7 @@ async function findMissingPhotos(supabase: Awaited<ReturnType<typeof requireAdmi
 }
 
 /**
- * Quoi : restaure les fiches d'un fichier de sauvegarde (catégories, produits, réglages, horaires, FAQ).
+ * Quoi : restaure les fiches d'un fichier de sauvegarde (catégories, produits, réglages, horaires, FAQ, services, réseaux sociaux).
  *   Les éléments créés après la sauvegarde ne sont PAS supprimés ; ceux de la sauvegarde retrouvent leur état d'alors.
  * Input : _previous — état précédent (useActionState) ; formData — backup (fichier JSON) et confirmation (mot « RESTAURER »).
  * Output : { ok: true, message } (avec les photos manquantes éventuelles) ou { ok: false, error } ; rien n'est écrit si le fichier est invalide.
@@ -62,6 +62,7 @@ export async function restoreBackupAction(_previous: ActionResult, formData: For
       ["réglages", supabase.from("site_settings").upsert(backup.settings, { onConflict: "key" })],
       ["horaires", supabase.from("opening_hours").upsert(backup.hours, { onConflict: "day_index" })],
       ["questions fréquentes", supabase.from("faq_items").upsert(backup.faq, { onConflict: "id" })],
+      ["services", supabase.from("services").upsert(backup.services, { onConflict: "id" })],
     ];
     for (const [label, step] of afterCategories) {
       const { error } = await step;
@@ -70,7 +71,7 @@ export async function restoreBackupAction(_previous: ActionResult, formData: For
     const missing = await findMissingPhotos(supabase, backup);
     revalidatePath("/");
     revalidatePath("/admin", "layout");
-    const base = `Sauvegarde du ${new Date(backup.exportedAt).toLocaleDateString("fr-FR")} restaurée (${backup.products.length} produits, ${backup.categories.length} catégories).`;
+    const base = `Sauvegarde du ${new Date(backup.exportedAt).toLocaleDateString("fr-FR")} restaurée (${backup.products.length} produits, ${backup.categories.length} catégories, ${backup.services.length} services).`;
     return { ok: true, message: missing.length > 0 ? `${base} Attention : ${missing.length} photo(s) n'existent plus dans le stockage et s'afficheront comme « Photo à venir ».` : base };
   } catch (error) {
     return toActionError(error, "Restauration de la sauvegarde");

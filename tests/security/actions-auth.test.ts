@@ -18,6 +18,12 @@ describe("actions d'administration : contrôle de l'administrateur obligatoire",
     expect(files.length).toBeGreaterThanOrEqual(5);
   });
 
+  it("analyse bien les actions des services et des réseaux sociaux (aucune ne passe inaperçue)", () => {
+    const namesIn = (file: string) => listExportedActions(readFileSync(join(ACTIONS_DIR, file), "utf8")).map(([name]) => name);
+    expect(namesIn("services.ts")).toEqual(["createServiceAction", "updateServiceAction", "moveServiceAction", "deleteServiceAction"]);
+    expect(namesIn("site.ts")).toContain("saveSocialLinksAction");
+  });
+
   for (const file of files) {
     for (const [name, body] of listExportedActions(readFileSync(join(ACTIONS_DIR, file), "utf8"))) {
       if (PUBLIC_ACTIONS.has(name)) continue;
@@ -40,11 +46,25 @@ describe("actions d'administration : contrôle de l'administrateur obligatoire",
       "src/app/admin/(panel)/site/page.tsx",
       "src/app/admin/(panel)/categories/page.tsx",
       "src/app/admin/(panel)/faq/page.tsx",
+      "src/app/admin/(panel)/services/page.tsx",
       "src/app/admin/(panel)/produits/page.tsx",
       "src/app/admin/(panel)/produits/nouveau/page.tsx",
       "src/app/admin/(panel)/produits/[id]/page.tsx",
       "src/app/admin/(panel)/layout.tsx",
     ];
     for (const target of targets) expect(readFileSync(join(process.cwd(), target), "utf8"), target).toContain("requireAdmin()");
+  });
+
+  it("les pages des services et du site vérifient l'administrateur AVANT de lire des données", () => {
+    const pages = ["src/app/admin/(panel)/services/page.tsx", "src/app/admin/(panel)/site/page.tsx"];
+    for (const page of pages) {
+      const source = readFileSync(join(process.cwd(), page), "utf8");
+      const firstCall = source.indexOf("requireAdmin()");
+      expect(firstCall, `${page} n'appelle pas requireAdmin()`).toBeGreaterThan(-1);
+      for (const sensitive of ["supabase.from(", "fetchAllServicesForAdmin(", "fetchSocialUrlsForAdmin("]) {
+        const position = source.indexOf(sensitive);
+        if (position !== -1) expect(firstCall, `${page} : ${sensitive} avant requireAdmin()`).toBeLessThan(position);
+      }
+    }
   });
 });

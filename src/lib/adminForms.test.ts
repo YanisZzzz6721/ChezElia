@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { parseCategoryForm, parseFaqEditForm, parseFaqForm, parseHoursForm, parseProductForm, parseQuickEditForm, parseSettingsForm } from "./adminForms";
+import {
+  parseCategoryForm,
+  parseFaqEditForm,
+  parseFaqForm,
+  parseHoursForm,
+  parseProductForm,
+  parseQuickEditForm,
+  parseServiceEditForm,
+  parseServiceForm,
+  parseSettingsForm,
+  parseSocialSettingsForm,
+} from "./adminForms";
 
 function form(fields: Record<string, string>): FormData {
   const data = new FormData();
@@ -139,5 +150,81 @@ describe("parseFaqEditForm", () => {
     expect(parseFaqEditForm(form({ id: UUID, question: "Q ?", answer: "R" }))).toEqual({ ok: true, data: { id: UUID, question: "Q ?", answer: "R" } });
     expect(parseFaqEditForm(form({ id: "pas-un-uuid", question: "Q ?", answer: "R" }))).toMatchObject({ ok: false });
     expect(parseFaqEditForm(form({ question: "Q ?", answer: "R" }))).toMatchObject({ ok: false });
+  });
+});
+
+describe("parseServiceForm", () => {
+  const valid = { title: "  Sandwichs frais ", body: " Des sandwichs. ", highlight: " 2,50 € ", icon: "sandwich", visible: "on" };
+
+  it("nettoie les champs et lit la visibilité cochée", () => {
+    expect(parseServiceForm(form(valid))).toEqual({
+      ok: true,
+      data: { title: "Sandwichs frais", body: "Des sandwichs.", highlight: "2,50 €", icon: "sandwich", visible: true },
+    });
+  });
+
+  it("mention vide ou en espaces : null ; case décochée : masqué", () => {
+    expect(parseServiceForm(form({ ...valid, highlight: "  ", visible: "" }))).toMatchObject({ ok: true, data: { highlight: null, visible: false } });
+    const withoutHighlight = form({ title: "T", body: "B", icon: "parcel" });
+    expect(parseServiceForm(withoutHighlight)).toMatchObject({ ok: true, data: { highlight: null, visible: false } });
+  });
+
+  it("titre : 0 (ou espaces) refusé, 1 et 60 acceptés, 61 refusé", () => {
+    expect(parseServiceForm(form({ ...valid, title: "" }))).toMatchObject({ ok: false, error: expect.stringMatching(/titre/i) });
+    expect(parseServiceForm(form({ ...valid, title: "   " }))).toMatchObject({ ok: false });
+    expect(parseServiceForm(form({ ...valid, title: "t" }))).toMatchObject({ ok: true });
+    expect(parseServiceForm(form({ ...valid, title: "t".repeat(60) }))).toMatchObject({ ok: true });
+    expect(parseServiceForm(form({ ...valid, title: "t".repeat(61) }))).toMatchObject({ ok: false, error: expect.stringMatching(/60/) });
+  });
+
+  it("texte : 0 refusé, 1 et 300 acceptés, 301 refusé", () => {
+    expect(parseServiceForm(form({ ...valid, body: "" }))).toMatchObject({ ok: false, error: expect.stringMatching(/texte/i) });
+    expect(parseServiceForm(form({ ...valid, body: "b" }))).toMatchObject({ ok: true });
+    expect(parseServiceForm(form({ ...valid, body: "b".repeat(300) }))).toMatchObject({ ok: true });
+    expect(parseServiceForm(form({ ...valid, body: "b".repeat(301) }))).toMatchObject({ ok: false, error: expect.stringMatching(/300/) });
+  });
+
+  it("mention : 1 et 30 acceptés, 31 refusé", () => {
+    expect(parseServiceForm(form({ ...valid, highlight: "h" }))).toMatchObject({ ok: true });
+    expect(parseServiceForm(form({ ...valid, highlight: "h".repeat(30) }))).toMatchObject({ ok: true });
+    expect(parseServiceForm(form({ ...valid, highlight: "h".repeat(31) }))).toMatchObject({ ok: false, error: expect.stringMatching(/30/) });
+  });
+
+  it("refuse une icône inconnue ou absente", () => {
+    expect(parseServiceForm(form({ ...valid, icon: "rocket" }))).toMatchObject({ ok: false, error: expect.stringMatching(/icône/i) });
+    expect(parseServiceForm(form({ title: "T", body: "B" }))).toMatchObject({ ok: false });
+  });
+
+  it("refuse un formulaire vide", () => {
+    expect(parseServiceForm(new FormData())).toMatchObject({ ok: false });
+  });
+});
+
+describe("parseServiceEditForm", () => {
+  it("ajoute l'identifiant validé", () => {
+    const fields = { id: UUID, title: "T", body: "B", highlight: "", icon: "vinted", visible: "on" };
+    expect(parseServiceEditForm(form(fields))).toEqual({ ok: true, data: { id: UUID, title: "T", body: "B", highlight: null, icon: "vinted", visible: true } });
+  });
+
+  it("refuse un identifiant invalide ou absent", () => {
+    const fields = { title: "T", body: "B", highlight: "", icon: "vinted" };
+    expect(parseServiceEditForm(form({ ...fields, id: "pas-un-uuid" }))).toMatchObject({ ok: false, error: expect.stringMatching(/identifiant/i) });
+    expect(parseServiceEditForm(form(fields))).toMatchObject({ ok: false });
+  });
+});
+
+describe("parseSocialSettingsForm", () => {
+  it("lit les trois adresses, normalisées ; les champs vides valent null", () => {
+    const result = parseSocialSettingsForm(form({ instagram: " https://www.instagram.com/x/ ", tiktok: "", snapchat: "https://www.snapchat.com/add/x" }));
+    expect(result).toEqual({ ok: true, data: { instagram: "https://www.instagram.com/x/", tiktok: null, snapchat: "https://www.snapchat.com/add/x" } });
+  });
+
+  it("accepte un formulaire entièrement vide (tous les réseaux masqués)", () => {
+    expect(parseSocialSettingsForm(new FormData())).toEqual({ ok: true, data: { instagram: null, tiktok: null, snapchat: null } });
+  });
+
+  it("refuse une adresse invalide en nommant le réseau fautif", () => {
+    expect(parseSocialSettingsForm(form({ tiktok: "javascript:alert(1)" }))).toMatchObject({ ok: false, error: expect.stringMatching(/TikTok/) });
+    expect(parseSocialSettingsForm(form({ instagram: "https://instagram.com.evil.fr/x" }))).toMatchObject({ ok: false, error: expect.stringMatching(/Instagram/) });
   });
 });

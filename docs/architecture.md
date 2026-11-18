@@ -27,7 +27,7 @@ Document technique, sans donnée commerciale ni secret. Pour les procédures d'e
 
 ## Modèle de données (résumé)
 
-- `categories`, `products` (`price_cents` **NULL = « Prix à confirmer »**, jamais 0), `site_settings` (clés autorisées uniquement : `tag`, `lead`, `phone_number`, `hero_photo`), `opening_hours`, `faq_items` (questions fréquentes, éditables dans l'admin), `audit_log`.
+- `categories`, `products` (`price_cents` **NULL = « Prix à confirmer »**, jamais 0), `site_settings` (clés autorisées uniquement : `tag`, `lead`, `phone_number`, `hero_photo`, `social_instagram`, `social_tiktok`, `social_snapchat`), `opening_hours`, `faq_items` (questions fréquentes, éditables dans l'admin), `services` (cartes de la section « Nos services » : titre, texte, mention, icône parmi une liste fermée, visibilité, ordre), `audit_log`.
 - Un produit peut être **visible**, **masqué** ou à la **corbeille** (suppression douce).
 - Droits : lecture publique des fiches visibles ; écriture réservée à `public.is_admin()` (rôle `admin` dans `app_metadata` du jeton). Une policy de lecture existe pour `anon` **et** `authenticated`.
 
@@ -45,6 +45,11 @@ L'application n'utilise que la clé **publique** Supabase. La clé secrète ne s
 - La mention de santé sur l'alcool (`ALCOHOL_NOTICE`) ne s'affiche que dans l'onglet de la catégorie alcool (`isAlcoholCategorySelected`).
 - Une fiche sans photo affiche « Photo à venir » ; une fiche sans prix affiche « Prix à confirmer ».
 - Les photos des fiches sont affichées dans un cadre 4:5 (`b-card__pic--photo`), jamais en débordement.
+
+## Services et réseaux sociaux
+
+- `ServicesSection.tsx` (« Nos services ») affiche les lignes visibles de la table `services` ; section absente s'il n'y en a aucune. Les textes sont échappés par React.
+- Les réseaux (`social_*`, adresses https validées par `src/content/social.ts`) alimentent `SocialIconRow` (premier écran), le pied de page et la propriété `sameAs` du JSON-LD ; sans réseau renseigné, rien n'est affiché. Liens sortants simples (`rel="noopener noreferrer"`), aucun widget tiers.
 
 ## Mouvement et performance
 
