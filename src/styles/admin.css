@@ -220,3 +220,12 @@ textarea.adm-input{resize:vertical;line-height:1.4}
 .adm-row--faq{grid-template-columns:minmax(0,1fr)}
 .adm-row--faq .adm-row__main>form{flex:1 1 100%;min-width:0}
 .adm-row--faq .adm-row__actions{grid-column:1/-1;justify-content:start}
+
+/* Champ mot de passe avec bouton « œil » (afficher / masquer). */
+.adm-pass{position:relative}
+.adm-pass__input{padding-right:56px}
+.adm-pass__toggle{position:absolute;top:50%;right:4px;display:grid;place-items:center;width:44px;height:44px;translate:0 -50%;border:0;border-radius:4px;background:transparent;color:var(--b-ink);cursor:pointer}
+.adm-pass__toggle svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.adm-pass__toggle[aria-pressed="true"]{color:#4a2c9a}
+.adm-pass__toggle:focus-visible{outline:3px solid var(--b-yellow);outline-offset:0}
+@media (hover:hover){.adm-pass__toggle:hover{background:var(--b-paper-2)}}
