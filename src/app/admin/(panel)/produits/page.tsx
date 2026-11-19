@@ -20,6 +20,7 @@ interface ProductListRow {
   photo_path: string | null;
   visible: boolean;
   deleted_at: string | null;
+  is_us_import: boolean;
   categories: { name: string } | null;
 }
 
@@ -29,10 +30,11 @@ const STATE_OPTIONS = [
   { value: "sans-prix", label: "Sans prix" },
   { value: "masques", label: "Masqués" },
   { value: "visibles", label: "Visibles" },
+  { value: "import-usa", label: "Import USA" },
 ] as const;
 
 /** Valeur du paramètre d'adresse « etat » pour chaque filtre d'état. */
-const STATE_PARAM: Record<StateFilter, string> = { all: "", "no-price": "sans-prix", hidden: "masques", visible: "visibles" };
+const STATE_PARAM: Record<StateFilter, string> = { all: "", "no-price": "sans-prix", hidden: "masques", visible: "visibles", "us-import": "import-usa" };
 
 /** Adresse de la liste avec les filtres donnés (les valeurs vides sont omises). */
 function buildListHref(query: ProductListQuery, overrides: Partial<Record<"q" | "cat" | "etat" | "page" | "vue", string>>): string {
@@ -69,6 +71,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
     if (query.state === "no-price") filtered = filtered.is("price_cents", null);
     if (query.state === "hidden") filtered = filtered.eq("visible", false);
     if (query.state === "visible") filtered = filtered.eq("visible", true);
+    if (query.state === "us-import") filtered = filtered.eq("is_us_import", true);
     return filtered;
   };
 
@@ -87,7 +90,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   const currentPage = Math.min(query.page, pageCount);
   const { from, to } = buildPageRange(currentPage);
   const listResult = await withFilters(
-    supabase.from("products").select("id, title, price_cents, photo_path, visible, deleted_at, categories(name)").order("title", { ascending: true }),
+    supabase.from("products").select("id, title, price_cents, photo_path, visible, deleted_at, is_us_import, categories(name)").order("title", { ascending: true }),
   ).range(from, to).returns<ProductListRow[]>();
   if (listResult.error) throw new Error(`Lecture des produits impossible : ${listResult.error.message}`);
   const products = listResult.data ?? [];
@@ -142,6 +145,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                 {inTrash ? <b className="adm-row__title">{product.title}</b> : <QuickEditForm id={product.id} title={product.title} price={centsToPriceInput(product.price_cents)} />}
                 <span className="adm-row__meta">{product.categories?.name ?? "Sans catégorie"}</span>
                 {product.price_cents === null ? <span className="adm-badge adm-badge--tbd">Prix à confirmer</span> : null}
+                {product.is_us_import ? <span className="adm-badge">Import USA</span> : null}
                 {!inTrash ? <span className={product.visible ? "adm-badge adm-badge--on" : "adm-badge adm-badge--off"}>{product.visible ? "Visible" : "Masqué"}</span> : null}
               </div>
               <div className="adm-row__actions">

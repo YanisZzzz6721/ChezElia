@@ -121,6 +121,35 @@ Les propriétaires gèrent eux-mêmes la section « Nos services » du site : ce
 - La section n'apparaît pas sur le site tant qu'aucun service n'est visible. N'indiquez que des services réellement proposés.
 - Les modifications apparaissent sur le site en moins d'une minute. Les services sont inclus dans la sauvegarde.
 
+## Pages des rayons (onglet **Catégories**) et « Import USA »
+
+### Texte de présentation d'un rayon
+
+Chaque catégorie a sa propre page sur le site (`/rayons/<adresse>`), pensée pour que les clients et Google trouvent le rayon. Dans l'onglet **Catégories**, sous le nom de chaque catégorie :
+
+- **Adresse de la page** : par exemple `/rayons/epicerie`. Elle est fabriquée à la création de la catégorie (minuscules, sans accents) et **ne change jamais**, même si vous renommez la catégorie : les liens déjà partagés continuent de fonctionner. Si deux catégories donnent la même adresse, la seconde reçoit `-2`.
+- **Texte de présentation du rayon (page Google)** : 2 à 4 phrases **vraies** sur ce rayon (ce qu'on y trouve, pour qui, à quel moment), 1 200 caractères maximum. Cliquez sur « Enregistrer le texte ».
+- **Laissez vide tant que ce n'est pas rédigé** : la page du rayon reste alors invisible pour Google. Le repère « Texte à rédiger » / « Texte rédigé » à côté de l'adresse indique où vous en êtes.
+- N'écrivez que ce qui est exact (aucune promesse, aucun chiffre ou avis inventé). Effacer le texte et enregistrer le retire de Google à la prochaine mise à jour.
+- Les modifications apparaissent sur le site en moins d'une minute. Le texte est inclus dans la sauvegarde ; une ancienne sauvegarde se restaure avec un texte vide.
+
+### Case « Import USA »
+
+Dans le formulaire d'un produit (**Produits** > **Modifier**, ou **Nouveau produit**), la case **Import USA** marque un produit réellement importé des États-Unis. Les produits cochés (et visibles) apparaissent sur la page « Produits américains ».
+
+- La liste des produits a un filtre **État > Import USA** pour retrouver les produits cochés, et un repère « Import USA » sur chaque ligne.
+- Ne cochez que ce qui est vraiment importé : une marque américaine n'est pas toujours un produit importé.
+- Le site ne coche rien tout seul. Pour vous aider à démarrer, `scripts/suggest-us-imports.mjs` **propose** une liste d'après les titres (lecture seule, il n'écrit rien) ; à vous de valider produit par produit :
+
+```bash
+# Supabase local ; clé saisie au terminal, jamais dans un fichier ni dans une conversation
+NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node --experimental-strip-types scripts/suggest-us-imports.mjs
+```
+
+Les marques reconnues sont listées en tête de `src/lib/usImportSuggestions.ts` (les alcools ne sont jamais proposés).
+
+- Migration : `20261119000000_seo_rayons.sql` — à appliquer au cloud avec `npx supabase db push --remote` (d'abord `--dry-run`). Elle ajoute l'adresse de chaque catégorie existante (calculée depuis son nom), le champ du texte de présentation (vide) et la case « Import USA » (décochée) ; aucun texte n'est créé.
+
 ## Réseaux sociaux (onglet **Site**, bloc « Réseaux sociaux »)
 
 Trois champs : Instagram, TikTok et Snapchat.

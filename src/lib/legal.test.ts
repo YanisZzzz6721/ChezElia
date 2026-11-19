@@ -22,7 +22,15 @@ describe("valueOrPlaceholder", () => {
 
 describe("listMissingLegalFields", () => {
   it("liste tous les champs manquants quand rien n'est fourni", () => {
-    expect(listMissingLegalFields(LEGAL)).toHaveLength(7);
+    const empty: LegalInfo = {
+      publisherName: null, legalForm: null, siret: null, publicationDirector: null,
+      contactEmail: null, hostName: null, hostAddress: null,
+    };
+    expect(listMissingLegalFields(empty)).toHaveLength(7);
+  });
+
+  it("les mentions légales réelles du site sont complètes (condition d'ouverture à Google)", () => {
+    expect(listMissingLegalFields(LEGAL)).toEqual([]);
   });
 
   it("renvoie une liste vide quand tout est fourni", () => {

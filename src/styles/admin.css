@@ -170,10 +170,6 @@ textarea.adm-input{resize:vertical;line-height:1.4}
   .adm-nav a[aria-current=page]::after{content:"";position:absolute;left:10px;right:10px;bottom:0;height:4px;background:var(--b-yellow)}
   .adm-nav__end{margin-left:auto;padding:0}
   .adm-nav__end .adm-logout{width:auto;padding:0 10px;font-size:12px}
-  .adm-nav__end .adm-logout{padding:0 14px;font-size:13px}
-  .adm-nav a{padding:0 14px;font-size:14px}
-  .adm-nav a[aria-current=page]{padding-left:14px}
-  .adm-nav a[aria-current=page]::after{left:14px;right:14px}
   .adm-cols{grid-template-columns:minmax(0,1.25fr) minmax(360px,1fr);gap:0 32px}
   .adm-cols--even{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .adm-cols__side{position:sticky;top:20px}
@@ -238,3 +234,11 @@ textarea.adm-input{resize:vertical;line-height:1.4}
 .adm-row--service .adm-row__actions{grid-column:1/-1;justify-content:start}
 .adm-row--service-off{border:3px dashed #4a2c9a;background:var(--b-paper-2)}
 .adm-row__status{display:flex;margin:0 0 6px}
+
+/* Barre de menu aérée seulement dès 1200 px (de 1100 à 1199 px : espacements serrés pour que les 7 entrées tiennent). */
+@media (min-width:1200px){
+  .adm-nav__end .adm-logout{padding:0 14px;font-size:13px}
+  .adm-nav a{padding:0 14px;font-size:14px}
+  .adm-nav a[aria-current=page]{padding-left:14px}
+  .adm-nav a[aria-current=page]::after{left:14px;right:14px}
+}

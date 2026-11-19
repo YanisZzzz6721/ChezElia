@@ -3,10 +3,10 @@ import type { Product } from "@/content/products";
 import { ALL_CATEGORIES_ID, filterProducts, isAlcoholCategoryLabel, isAlcoholCategorySelected, limitVisible, listCategoriesWithProducts, normalizeForSearch, searchProducts } from "./catalogue";
 
 const products: readonly Product[] = [
-  { id: "a", title: "A", categoryId: "boissons", priceInCents: null },
-  { id: "b", title: "B", categoryId: "confiserie", priceInCents: 150 },
-  { id: "c", title: "C", categoryId: null, priceInCents: 0 },
-  { id: "d", title: "D", categoryId: "boissons", priceInCents: null },
+  { id: "a", title: "A", categoryId: "boissons", priceInCents: null, isUsImport: false },
+  { id: "b", title: "B", categoryId: "confiserie", priceInCents: 150, isUsImport: false },
+  { id: "c", title: "C", categoryId: null, priceInCents: 0, isUsImport: false },
+  { id: "d", title: "D", categoryId: "boissons", priceInCents: null, isUsImport: false },
 ];
 
 describe("filterProducts", () => {
@@ -29,9 +29,9 @@ describe("filterProducts", () => {
 
 describe("listCategoriesWithProducts", () => {
   const categories = [
-    { id: "boissons", label: "Boissons" },
-    { id: "confiserie", label: "Confiserie" },
-    { id: "vide", label: "Catégorie vide" },
+    { id: "boissons", label: "Boissons", slug: "rayon-boissons", seoIntro: null },
+    { id: "confiserie", label: "Confiserie", slug: "rayon-confiserie", seoIntro: null },
+    { id: "vide", label: "Catégorie vide", slug: "rayon-vide", seoIntro: null },
   ];
 
   it("ne garde que les catégories qui ont au moins un produit, dans l'ordre d'origine", () => {
@@ -43,7 +43,7 @@ describe("listCategoriesWithProducts", () => {
   });
 
   it("ignore les produits sans catégorie", () => {
-    const onlyUncategorised: readonly Product[] = [{ id: "c", title: "C", categoryId: null, priceInCents: null }];
+    const onlyUncategorised: readonly Product[] = [{ id: "c", title: "C", categoryId: null, priceInCents: null, isUsImport: false }];
     expect(listCategoriesWithProducts(categories, onlyUncategorised)).toEqual([]);
   });
 });
@@ -67,10 +67,10 @@ describe("normalizeForSearch", () => {
 
 describe("searchProducts", () => {
   const list: readonly Product[] = [
-    { id: "1", title: "Coca-Cola Cherry", categoryId: null, priceInCents: null },
-    { id: "2", title: "Têtes Brûlées Paint Billes", categoryId: null, priceInCents: null },
-    { id: "3", title: "Brets chips Côte de bœuf grillée", categoryId: null, priceInCents: null, description: "Chips saveur barbecue" },
-    { id: "4", title: "Fanta Orange", categoryId: null, priceInCents: 150 },
+    { id: "1", title: "Coca-Cola Cherry", categoryId: null, priceInCents: null, isUsImport: false },
+    { id: "2", title: "Têtes Brûlées Paint Billes", categoryId: null, priceInCents: null, isUsImport: false },
+    { id: "3", title: "Brets chips Côte de bœuf grillée", categoryId: null, priceInCents: null, description: "Chips saveur barbecue", isUsImport: false },
+    { id: "4", title: "Fanta Orange", categoryId: null, priceInCents: 150, isUsImport: false },
   ];
 
   it("renvoie tout pour une recherche vide", () => {
@@ -136,8 +136,8 @@ describe("isAlcoholCategoryLabel", () => {
 
 describe("isAlcoholCategorySelected", () => {
   const categories = [
-    { id: "b", label: "Boissons" },
-    { id: "a", label: "Alcools" },
+    { id: "b", label: "Boissons", slug: "rayon-b", seoIntro: null },
+    { id: "a", label: "Alcools", slug: "rayon-a", seoIntro: null },
   ];
 
   it("est vrai uniquement quand l'onglet sélectionné est une catégorie d'alcool", () => {

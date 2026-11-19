@@ -323,3 +323,123 @@ describe("réseaux sociaux (site_settings)", () => {
     expect(update.error).not.toBeNull();
   });
 });
+
+describe("pages de rayon : slug, texte de présentation et Import USA", () => {
+  const categoryIds: string[] = [];
+  const testProductIds: string[] = [];
+  let categoryId = "";
+  let usProductId = "";
+
+  /** Crée une catégorie de test (nom préfixé « TEST », nettoyée par afterAll) avec le client donné. */
+  async function insertCategory(client: SupabaseClient, row: Record<string, unknown>) {
+    const result = await client.from("categories").insert({ position: 950, ...row }).select("id, slug").maybeSingle();
+    if (result.data) categoryIds.push(result.data.id);
+    return result;
+  }
+
+  beforeAll(async () => {
+    const created = await insertCategory(admin, { name: "TEST rayon", slug: "test-rayon" });
+    if (created.error || !created.data) throw new Error(`Préparation de la catégorie de test échouée : ${created.error?.message}`);
+    categoryId = created.data.id;
+    const product = await admin.from("products").insert({ title: "TEST import USA", visible: true, category_id: categoryId, is_us_import: true }).select("id").single();
+    if (product.error) throw new Error(`Préparation du produit de test échouée : ${product.error.message}`);
+    usProductId = product.data.id;
+    testProductIds.push(usProductId);
+  });
+
+  afterAll(async () => {
+    await service.from("products").delete().in("id", testProductIds);
+    await service.from("categories").delete().in("id", categoryIds);
+    await service.from("categories").delete().like("name", "TEST%");
+  });
+
+  it("anonyme : lit le slug, le texte de présentation et la case Import USA", async () => {
+    await admin.from("categories").update({ seo_intro: "Texte de test." }).eq("id", categoryId);
+    const category = await anon.from("categories").select("slug, seo_intro").eq("id", categoryId).single();
+    expect(category.error).toBeNull();
+    expect(category.data).toEqual({ slug: "test-rayon", seo_intro: "Texte de test." });
+    const product = await anon.from("products").select("is_us_import").eq("id", usProductId).single();
+    expect(product.data?.is_us_import).toBe(true);
+  });
+
+  it("anonyme et utilisateur sans rôle admin : ne peuvent modifier ni seo_intro, ni slug, ni is_us_import", async () => {
+    for (const [label, client] of [["anonyme", anon], ["sans rôle admin", stranger]] as const) {
+      const intro = await client.from("categories").update({ seo_intro: `piraté (${label})` }).eq("id", categoryId).select();
+      expect(intro.error !== null || (intro.data ?? []).length === 0, `seo_intro ${label}`).toBe(true);
+      const slug = await client.from("categories").update({ slug: "pirate" }).eq("id", categoryId).select();
+      expect(slug.error !== null || (slug.data ?? []).length === 0, `slug ${label}`).toBe(true);
+      const usImport = await client.from("products").update({ is_us_import: false }).eq("id", usProductId).select();
+      expect(usImport.error !== null || (usImport.data ?? []).length === 0, `is_us_import ${label}`).toBe(true);
+      expect((await client.from("categories").insert({ name: `TEST pirate ${label}`, slug: "pirate" })).error, `insert ${label}`).not.toBeNull();
+    }
+    const { data: category } = await service.from("categories").select("slug, seo_intro").eq("id", categoryId).single();
+    expect(category).toEqual({ slug: "test-rayon", seo_intro: "Texte de test." });
+    const { data: product } = await service.from("products").select("is_us_import").eq("id", usProductId).single();
+    expect(product?.is_us_import).toBe(true);
+  });
+
+  it("administrateur : modifie seo_intro et is_us_import, et peut vider le texte (null)", async () => {
+    expect((await admin.from("categories").update({ seo_intro: "Nouveau texte." }).eq("id", categoryId)).error).toBeNull();
+    expect((await admin.from("products").update({ is_us_import: false }).eq("id", usProductId)).error).toBeNull();
+    expect((await admin.from("products").update({ is_us_import: true }).eq("id", usProductId)).error).toBeNull();
+    expect((await admin.from("categories").update({ seo_intro: null }).eq("id", categoryId)).error).toBeNull();
+    const { data } = await service.from("categories").select("seo_intro").eq("id", categoryId).single();
+    expect(data?.seo_intro).toBeNull();
+  });
+
+  it("la base refuse un slug invalide (majuscule, espace, tirets doubles ou de bord, vide, accent, > 60) et un slug nul", async () => {
+    for (const slug of ["Test-Rayon", "test rayon", "test--rayon", "-test", "test-", "", "épicerie", "a".repeat(61), "../x"]) {
+      expect((await admin.from("categories").update({ slug }).eq("id", categoryId)).error, JSON.stringify(slug)).not.toBeNull();
+    }
+    expect((await admin.from("categories").update({ slug: null }).eq("id", categoryId)).error).not.toBeNull();
+    expect((await admin.from("categories").update({ slug: "a".repeat(60) }).eq("id", categoryId)).error).toBeNull();
+    expect((await admin.from("categories").update({ slug: "test-rayon" }).eq("id", categoryId)).error).toBeNull();
+  });
+
+  it("la base refuse un slug déjà utilisé par une autre catégorie", async () => {
+    const duplicate = await insertCategory(admin, { name: "TEST doublon", slug: "test-rayon" });
+    expect(duplicate.error).not.toBeNull();
+    expect(duplicate.error?.message).toContain("categories_slug_unique");
+  });
+
+  it("la base refuse un texte de présentation vide, blanc ou de plus de 1200 caractères, et accepte 1200", async () => {
+    for (const seoIntro of ["", "   \n ", "a".repeat(1201)]) {
+      expect((await admin.from("categories").update({ seo_intro: seoIntro }).eq("id", categoryId)).error, `${seoIntro.length} caractères`).not.toBeNull();
+    }
+    expect((await admin.from("categories").update({ seo_intro: "a".repeat(1200) }).eq("id", categoryId)).error).toBeNull();
+    await admin.from("categories").update({ seo_intro: null }).eq("id", categoryId);
+  });
+
+  it("une catégorie créée sans slug (script, démonstration) en reçoit un, unique : suffixe -2 en cas de collision", async () => {
+    const first = await insertCategory(admin, { name: "TEST Épicerie fine!" });
+    expect(first.error).toBeNull();
+    expect(first.data?.slug).toBe("test-epicerie-fine");
+    const second = await insertCategory(admin, { name: "TEST épicerie fine ?" });
+    expect(second.data?.slug).toBe("test-epicerie-fine-2");
+    const emoji = await insertCategory(admin, { name: "TEST 🍕" });
+    expect(emoji.data?.slug).toBe("test");
+  });
+
+  it("is_us_import vaut faux par défaut et refuse une valeur non booléenne", async () => {
+    const created = await admin.from("products").insert({ title: "TEST sans import" }).select("id, is_us_import").single();
+    expect(created.error).toBeNull();
+    testProductIds.push(created.data!.id);
+    expect(created.data?.is_us_import).toBe(false);
+    expect((await admin.from("products").update({ is_us_import: null }).eq("id", created.data!.id)).error).not.toBeNull();
+  });
+
+  it("la fonction de slug de la base retire les accents (extension unaccent) et refuse de fabriquer un slug vide", async () => {
+    const { data } = await service.rpc("slugify_category_name", { category_name: "Épicerie — Œufs d'été" });
+    expect(data).toBe("epicerie-oeufs-d-ete");
+    const { data: empty } = await service.rpc("slugify_category_name", { category_name: "🍕" });
+    expect(empty).toBe("");
+  });
+
+  it("toutes les catégories existantes ont un slug valide et unique (reprise de la migration)", async () => {
+    const { data, error } = await service.from("categories").select("slug").not("name", "like", "TEST%");
+    expect(error).toBeNull();
+    const slugs = (data ?? []).map((row) => row.slug as string);
+    for (const slug of slugs) expect(slug).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
+    expect(new Set(slugs).size).toBe(slugs.length);
+  });
+});

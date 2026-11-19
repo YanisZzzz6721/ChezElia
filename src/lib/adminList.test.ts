@@ -33,6 +33,10 @@ describe("parseListQuery", () => {
     expect(parseListQuery({ etat: "visibles" }).state).toBe("visible");
   });
 
+  it("lit le filtre « Import USA »", () => {
+    expect(parseListQuery({ etat: "import-usa" }).state).toBe("us-import");
+  });
+
   it("ignore un identifiant de catégorie, un état ou une vue invalides", () => {
     expect(parseListQuery({ cat: "pas-un-uuid" }).categoryId).toBeNull();
     expect(parseListQuery({ etat: "n-importe-quoi" }).state).toBe("all");

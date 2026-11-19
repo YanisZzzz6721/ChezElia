@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { FAQ_ANSWER_MAX_LENGTH, FAQ_QUESTION_MAX_LENGTH } from "@/content/faq";
 import { SERVICE_BODY_MAX_LENGTH, SERVICE_HIGHLIGHT_MAX_LENGTH, SERVICE_ICONS, SERVICE_TITLE_MAX_LENGTH } from "@/content/services";
+import { CATEGORY_SEO_INTRO_MAX_LENGTH } from "@/content/products";
+import { CATEGORY_SLUG_MAX_LENGTH, CATEGORY_SLUG_PATTERN, assignLegacyCategorySlugs } from "@/lib/categorySlug";
 import { SOCIAL_NETWORKS, parseSocialUrl, type SocialNetworkName } from "@/content/social";
 
 export const BACKUP_VERSION = 1;
@@ -9,7 +11,15 @@ export const BACKUP_VERSION = 1;
 const PHOTO_PATH_PATTERN = /^(products|site)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$/;
 const TIME_PATTERN = /^([01]\d|2[0-3])h[0-5]\d$/;
 
-const categorySchema = z.object({ id: z.string().uuid(), name: z.string().trim().min(1).max(60), position: z.number().int() });
+const categorySchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().trim().min(1).max(60),
+  position: z.number().int(),
+  /** Absent des sauvegardes antérieures aux pages de rayon : recalculé depuis le nom (voir withCategorySlugs). */
+  slug: z.string().max(CATEGORY_SLUG_MAX_LENGTH).regex(CATEGORY_SLUG_PATTERN).optional(),
+  /** Absent des sauvegardes antérieures aux pages de rayon : relu comme « texte non rédigé ». */
+  seo_intro: z.string().refine((text) => text.trim() !== "", "texte de présentation vide").max(CATEGORY_SEO_INTRO_MAX_LENGTH).nullable().default(null),
+});
 const faqSchema = z.object({
   id: z.string().uuid(),
   question: z.string().trim().min(1).max(FAQ_QUESTION_MAX_LENGTH),
@@ -48,6 +58,8 @@ const productSchema = z
     photo_height: z.number().int().positive().nullable(),
     visible: z.boolean(),
     deleted_at: z.string().nullable(),
+    /** Absent des sauvegardes antérieures à « Import USA » : relu comme faux. */
+    is_us_import: z.boolean().default(false),
   })
   .refine((p) => (p.photo_path === null) === (p.photo_width === null) && (p.photo_path === null) === (p.photo_height === null), {
     message: "photo : chemin et dimensions vont ensemble",
@@ -71,7 +83,7 @@ const hoursSchema = z
   })
   .refine((h) => h.is_closed || (h.opens_at !== null && h.closes_at !== null), { message: "un jour ouvert a besoin de ses deux heures" });
 
-const backupSchema = z.object({
+const backupFileSchema = z.object({
   version: z.literal(BACKUP_VERSION),
   exportedAt: z.string(),
   categories: z.array(categorySchema),
@@ -84,12 +96,20 @@ const backupSchema = z.object({
   services: z.array(serviceSchema).default([]),
 });
 
+/** Donne une adresse à chaque catégorie qui n'en a pas (ancienne sauvegarde), sans changer celles qui en ont une. */
+function withCategorySlugs<File extends z.infer<typeof backupFileSchema>>(file: File) {
+  const slugById = assignLegacyCategorySlugs(file.categories);
+  return { ...file, categories: file.categories.map((category) => ({ ...category, slug: slugById.get(category.id) as string })) };
+}
+
+const backupSchema = backupFileSchema.transform(withCategorySlugs);
+
 export type BackupFile = z.infer<typeof backupSchema>;
 export type BackupData = Omit<BackupFile, "version" | "exportedAt">;
 
 /**
  * Quoi : assemble le fichier de sauvegarde (JSON) à partir des données lues en base.
- * Input : data — catégories, produits (corbeille comprise), réglages (réseaux sociaux compris), horaires, FAQ, services ; now — date d'export.
+ * Input : data — catégories (avec adresse de page et texte de présentation), produits (avec « Import USA ») (corbeille comprise), réglages (réseaux sociaux compris), horaires, FAQ, services ; now — date d'export.
  * Output : l'objet sauvegarde, versionné et daté.
  * Effets de bord : aucun (fonction pure). Les photos elles-mêmes restent dans le stockage : seuls leurs chemins sont sauvegardés.
  */
@@ -101,6 +121,7 @@ export function buildBackup(data: BackupData, now: Date): BackupFile {
 function findConsistencyProblem(file: BackupFile): string | null {
   const categoryIds = new Set(file.categories.map((c) => c.id));
   if (categoryIds.size !== file.categories.length) return "Sauvegarde invalide : doublon d'identifiant de catégorie.";
+  if (new Set(file.categories.map((c) => c.slug)).size !== file.categories.length) return "Sauvegarde invalide : deux catégories ont la même adresse de page (slug).";
   if (new Set(file.products.map((p) => p.id)).size !== file.products.length) return "Sauvegarde invalide : doublon d'identifiant de produit.";
   if (new Set(file.faq.map((q) => q.id)).size !== file.faq.length) return "Sauvegarde invalide : doublon d'identifiant de question FAQ.";
   if (new Set(file.services.map((s) => s.id)).size !== file.services.length) return "Sauvegarde invalide : doublon d'identifiant de service.";

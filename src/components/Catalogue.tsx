@@ -14,7 +14,9 @@ import {
   searchProducts,
 } from "@/lib/catalogue";
 import { staggerStyle } from "@/lib/motion";
+import { listPublicUsImportProducts } from "@/lib/shelfPages";
 import { runWithViewTransition } from "@/lib/viewTransition";
+import { CatalogueLinks } from "./CatalogueLinks";
 import { NeonShape } from "./NeonShape";
 import { ProductCard } from "./ProductCard";
 
@@ -79,7 +81,7 @@ function CatalogueSearch({ value, onChange }: { value: string; onChange: (value:
 }
 
 /**
- * Quoi : section catalogue (recherche, onglets par catégorie, grille 2 colonnes sur mobile, « Voir plus »).
+ * Quoi : section catalogue (recherche, onglets par catégorie, grille 2 colonnes sur mobile, « Voir plus », liens vers la page du rayon et les produits américains).
  * Input : categories — les catégories ; products — les produits visibles.
  * Output : la section catalogue.
  * Effets de bord : état local React (catégorie, recherche, nombre de fiches affichées).
@@ -96,6 +98,8 @@ export function Catalogue({ categories, products }: { categories: readonly Categ
   const hasProducts = products.length > 0;
   const isSearching = search.trim() !== "";
   const showAlcoholNotice = isAlcoholCategorySelected(categories, selectedId);
+  const selectedRayon = categories.find((category) => category.id === selectedId) ?? null;
+  const hasUsImportProducts = listPublicUsImportProducts(products, categories).length > 0;
 
   const selectCategory = (categoryId: string) => {
     if (categoryId === selectedId) return;
@@ -161,6 +165,7 @@ export function Catalogue({ categories, products }: { categories: readonly Categ
             </button>
           </div>
         ) : null}
+        {hasProducts ? <CatalogueLinks rayon={selectedRayon} showUsImportLink={hasUsImportProducts} /> : null}
       </div>
     </section>
   );

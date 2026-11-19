@@ -3,37 +3,10 @@ import type { SocialLink } from "@/content/social";
 import { ActionButtons } from "./ActionButtons";
 import { CallButton } from "./CallButton";
 import { Address } from "./Address";
-import { Logo } from "./Logo";
 import { NeonShape } from "./NeonShape";
+import { SiteHeader } from "./SiteHeader";
 import { SocialIconRow } from "./SocialIconRow";
 import { StorePhotoFrame, type StorePhotoFrameProps } from "./StorePhotoFrame";
-
-const MAIN_NAV = [
-  { href: "#catalogue", label: "Catalogue" },
-  { href: "#horaires", label: "Horaires" },
-] as const;
-
-/**
- * Quoi : en-tête avec la marque et la navigation principale.
- * Input : aucun.
- * Output : le bloc d'en-tête (liens d'ancres + lien « Venir au magasin »).
- * Effets de bord : aucun (composant pur).
- */
-function Header() {
-  return (
-    <header className="b-nav">
-      <Logo size="nav" href="#top" />
-      <nav className="b-links" aria-label="Navigation principale">
-        {MAIN_NAV.map((item) => (
-          <a key={item.href} href={item.href}>{item.label}</a>
-        ))}
-        <a className="b-links__cta" href={SITE.directionsUrl} target="_blank" rel="noopener noreferrer">
-          Venir au magasin
-        </a>
-      </nav>
-    </header>
-  );
-}
 
 function PhotoStage({ photo }: { photo: StorePhotoFrameProps["photo"] }) {
   return (
@@ -79,7 +52,7 @@ interface HeroProps {
 export function Hero({ tag, lead, phoneNumber, photo, socialLinks = [] }: HeroProps) {
   return (
     <section className="b-hero p-hero" id="top">
-      <Header />
+      <SiteHeader />
       <div className="b-top p-top">
         <div className="b-copy">
           <p className="b-tag">{tag}</p>

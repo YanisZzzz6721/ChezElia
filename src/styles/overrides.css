@@ -271,3 +271,35 @@ html.lenis,html.lenis body{height:auto}
 .b-social__a:active{translate:0 0;scale:.94}
 .b-social__a:focus-visible{outline:3px solid #fff;outline-offset:3px}
 @media (prefers-reduced-motion:reduce){.b-social__a{transition:none}}
+
+/* Pages de rayon (/rayons, /rayons/<slug>, /produits-americains) : mêmes classes que l'accueil, quelques ajustements de mise en page. */
+.r-top{position:relative;overflow:clip;background:var(--b-violet)}
+.r-top::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(rgba(18,5,31,.34) 1.4px,transparent 1.9px);background-size:15px 15px;-webkit-mask-image:linear-gradient(115deg,#000 0,transparent 52%);mask-image:linear-gradient(115deg,#000 0,transparent 52%)}
+.b-cat.r-main{min-height:60vh;padding:44px 0 96px}
+.r-crumbs{margin:0 0 18px}
+.r-crumbs ol{display:flex;flex-wrap:wrap;align-items:center;margin:0;padding:0;list-style:none;font:700 14px/1.2 var(--font-archivo),sans-serif;letter-spacing:.04em;color:var(--b-lilac)}
+.r-crumbs li+li::before{content:"›";margin:0 .6em;color:var(--b-yellow)}
+.r-crumbs a{display:inline-flex;align-items:center;min-height:44px;text-decoration:underline;text-underline-offset:4px}
+.r-crumbs [aria-current="page"]{color:var(--b-paper)}
+.r-h1{font-size:clamp(40px,7vw,88px);overflow-wrap:anywhere}
+.r-intro{max-width:760px;margin:22px 0 34px}
+.r-intro .b-intro{margin:0;white-space:pre-line}
+.r-intro .b-intro+.b-intro{margin-top:14px}
+.r-rayons{display:flex;flex-wrap:wrap;gap:18px;margin:36px 0 0;padding:0;list-style:none}
+.r-rayons__link{display:inline-flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;padding:10px 22px;text-decoration:none}
+.r-rayons__link small{font:700 12px/1.2 var(--font-archivo),sans-serif;letter-spacing:.06em;text-transform:none;opacity:.85}
+@media (max-width:640px){
+  .b-links a[href="/#catalogue"],.b-links a[href="/#horaires"]{display:inline-flex}
+  .b-cat.r-main{padding:32px 0 72px}
+  .r-rayons{gap:12px}
+}
+
+/* Catalogue : liens discrets vers la page du rayon et les produits américains (centrés, sous la grille). */
+.b-seealso{display:flex;flex-wrap:wrap;justify-content:center;gap:0 28px;margin:44px 0 0;font:700 14px/1.2 var(--font-archivo),sans-serif;letter-spacing:.04em;color:var(--b-lilac)}
+.b-seealso a{display:inline-flex;align-items:center;min-height:44px;text-decoration:underline;text-underline-offset:4px}
+@media (max-width:640px){.b-seealso{margin-top:32px}}
+
+/* Pied de page : ligne « Nos rayons » (centrée, comme le reste du pied de page). */
+.s-foot__rayons{margin:18px auto 6px}
+.s-foot__rayons-title{margin:0 0 2px;font:800 13px/1.2 var(--font-archivo),sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--b-paper)}
+.s-foot__rayons ul{display:flex;flex-wrap:wrap;justify-content:center;gap:0 20px;margin:0;padding:0;list-style:none}

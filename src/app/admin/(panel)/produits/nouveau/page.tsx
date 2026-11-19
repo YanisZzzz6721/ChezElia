@@ -8,7 +8,7 @@ export default async function NewProductPage() {
   return (
     <>
       <h1 className="adm-h1">Nouveau produit</h1>
-      <ProductForm categories={data ?? []} values={{ title: "", categoryId: null, description: "", price: "", visible: true, photoUrl: null }} />
+      <ProductForm categories={data ?? []} values={{ title: "", categoryId: null, description: "", price: "", visible: true, isUsImport: false, photoUrl: null }} />
     </>
   );
 }

@@ -8,9 +8,9 @@ const SERVICE = "55555555-5555-4555-8555-555555555555";
 const PHOTO = "products/33333333-3333-4333-8333-333333333333.webp";
 
 const data: BackupData = {
-  categories: [{ id: CAT, name: "Boissons", position: 0 }],
+  categories: [{ id: CAT, name: "Boissons", position: 0, slug: "boissons", seo_intro: null }],
   products: [
-    { id: PRODUCT, category_id: CAT, title: "Fanta", description: null, price_cents: null, photo_path: PHOTO, photo_width: 800, photo_height: 600, visible: true, deleted_at: null },
+    { id: PRODUCT, category_id: CAT, title: "Fanta", description: null, price_cents: null, photo_path: PHOTO, photo_width: 800, photo_height: 600, visible: true, deleted_at: null, is_us_import: false },
   ],
   settings: [{ key: "tag", value: "Ouvert tard" }],
   hours: [{ day_index: 0, is_closed: false, opens_at: "15h30", closes_at: "00h30" }],
@@ -165,5 +165,57 @@ describe("sauvegarde : réseaux sociaux", () => {
     for (const value of ["javascript:alert(1)", "http://www.instagram.com/x", "https://evil.example/x", "https://www.tiktok.com/@x", "https://instagram.com.evil.fr/x", 12]) {
       expect(parseBackup(settingsText([{ key: "social_instagram", value }]))).toMatchObject({ ok: false });
     }
+  });
+});
+
+describe("sauvegarde : pages de rayon et Import USA", () => {
+  const CAT_B = "66666666-6666-4666-8666-666666666666";
+  const fullData: BackupData = {
+    ...data,
+    categories: [{ id: CAT, name: "Épicerie", position: 0, slug: "epicerie", seo_intro: "Notre rayon épicerie." }],
+    products: [{ ...data.products[0]!, is_us_import: true }],
+  };
+
+  it("restitue le slug, le texte de présentation et la case Import USA (aller-retour)", () => {
+    const result = parseBackup(JSON.stringify(buildBackup(fullData, new Date())));
+    expect(result).toMatchObject({ ok: true, data: { categories: [{ slug: "epicerie", seo_intro: "Notre rayon épicerie." }], products: [{ is_us_import: true }] } });
+  });
+
+  /** Sauvegarde d'avant les pages de rayon : ni slug, ni seo_intro, ni is_us_import. */
+  const legacyText = (categories: object[]) => {
+    const file = JSON.parse(JSON.stringify(buildBackup(data, new Date()))) as Record<string, any>;
+    file.categories = categories;
+    for (const product of file.products) delete product.is_us_import;
+    return JSON.stringify(file);
+  };
+
+  it("relit une ancienne sauvegarde : slug recalculé depuis le nom, seo_intro null, is_us_import faux", () => {
+    const result = parseBackup(legacyText([{ id: CAT, name: "Épicerie", position: 0 }]));
+    expect(result).toMatchObject({ ok: true, data: { categories: [{ id: CAT, name: "Épicerie", slug: "epicerie", seo_intro: null }], products: [{ is_us_import: false }] } });
+  });
+
+  it("résout les collisions de slug d'une ancienne sauvegarde (suffixe -2) dans l'ordre des positions", () => {
+    const result = parseBackup(legacyText([{ id: CAT_B, name: "Boissons!", position: 1 }, { id: CAT, name: "Boissons", position: 0 }]));
+    expect(result).toMatchObject({ ok: true });
+    if (!result.ok) return;
+    const slugById = new Map(result.data.categories.map((category) => [category.id, category.slug]));
+    expect(slugById.get(CAT)).toBe("boissons");
+    expect(slugById.get(CAT_B)).toBe("boissons-2");
+  });
+
+  it("rejette un slug invalide, un doublon de slug, un texte vide ou trop long", () => {
+    const withCategory = (overrides: object) => JSON.stringify({ ...buildBackup(data, new Date()), categories: [{ id: CAT, name: "B", position: 0, slug: "b", seo_intro: null, ...overrides }] });
+    for (const slug of ["Bad Slug", "../x", "a--b", "-a", "", "a".repeat(61)]) expect(parseBackup(withCategory({ slug })), slug).toMatchObject({ ok: false });
+    expect(parseBackup(withCategory({ seo_intro: "   " }))).toMatchObject({ ok: false });
+    expect(parseBackup(withCategory({ seo_intro: "a".repeat(1201) }))).toMatchObject({ ok: false });
+    expect(parseBackup(withCategory({ seo_intro: "a".repeat(1200) }))).toMatchObject({ ok: true });
+    const twice = JSON.stringify({ ...buildBackup(data, new Date()), products: [], categories: [{ id: CAT, name: "A", position: 0, slug: "x", seo_intro: null }, { id: CAT_B, name: "B", position: 1, slug: "x", seo_intro: null }] });
+    expect(parseBackup(twice)).toMatchObject({ ok: false, error: expect.stringMatching(/adresse|slug/i) });
+  });
+
+  it("rejette is_us_import qui n'est pas un booléen", () => {
+    const file = JSON.parse(JSON.stringify(buildBackup(data, new Date()))) as Record<string, any>;
+    file.products[0].is_us_import = "oui";
+    expect(parseBackup(JSON.stringify(file))).toMatchObject({ ok: false });
   });
 });
