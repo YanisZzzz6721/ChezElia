@@ -14,6 +14,13 @@ Ensuite : redéployer. Vérifier `https://<domaine>/robots.txt` (doit autoriser 
 
 Ce qui est en place : titre et description avec la ville, URL canoniques, aperçu de partage (`/opengraph-image`), données structurées `ConvenienceStore` (adresse, horaires, téléphone si fourni, image d'accueil si publiée), `lang="fr"`, un seul H1, textes alternatifs des photos produit.
 
+### Pages de rayon et sitemap
+
+- Les pages `/rayons/<slug>`, `/rayons` et `/produits-americains` suivent la règle anti-contenu mince : indexables seulement avec un texte de présentation rédigé dans l'administration ET au moins 6 produits visibles (`/produits-americains` : 6 produits, `/rayons` : au moins un rayon indexable). Sinon `noindex, follow` : la page reste accessible aux visiteurs mais n'est pas proposée à Google.
+- `sitemap.xml` (régénéré toutes les minutes) ne liste que les pages **indexables** (accueil, légales, `/rayons`, rayons indexables, `/produits-americains`) ; il reste vide tant que l'indexation globale est fermée, sans lecture en base.
+- Chaque page porte un titre « <Nom> à Strasbourg | Chez Elia », une description (nombre de produits, heure de fermeture lue dans les horaires), une URL canonique et un `BreadcrumbList`. Aucune donnée Product/Offer : les prix sont parfois « à confirmer ».
+- Le rayon des alcools affiche toujours la mention de santé ; les alcools ne figurent jamais sur `/produits-americains`.
+
 Après mise en ligne : créer la fiche Google Business Profile avec **exactement** le même nom, la même adresse et le même téléphone que le site, déclarer le sitemap dans Google Search Console.
 
 ## Sécurité : tests rejouables

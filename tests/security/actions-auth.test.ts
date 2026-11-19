@@ -24,6 +24,12 @@ describe("actions d'administration : contrôle de l'administrateur obligatoire",
     expect(namesIn("site.ts")).toContain("saveSocialLinksAction");
   });
 
+  it("analyse bien les actions des catégories (dont le texte de présentation du rayon) et des produits", () => {
+    const namesIn = (file: string) => listExportedActions(readFileSync(join(ACTIONS_DIR, file), "utf8")).map(([name]) => name);
+    expect(namesIn("categories.ts")).toEqual(["createCategoryAction", "renameCategoryAction", "saveCategorySeoIntroAction", "moveCategoryAction", "deleteCategoryAction"]);
+    expect(namesIn("products.ts")).toContain("saveProductAction");
+  });
+
   for (const file of files) {
     for (const [name, body] of listExportedActions(readFileSync(join(ACTIONS_DIR, file), "utf8"))) {
       if (PUBLIC_ACTIONS.has(name)) continue;

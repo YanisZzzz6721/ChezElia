@@ -15,6 +15,8 @@ export interface ProductFormValues {
   /** Texte du champ prix (« 2,50 » ou vide). */
   price: string;
   visible: boolean;
+  /** Produit importé des États-Unis (case « Import USA »). */
+  isUsImport: boolean;
   photoUrl: string | null;
 }
 
@@ -53,6 +55,12 @@ export function ProductForm({ values, categories }: ProductFormProps) {
         <input type="checkbox" name="visible" defaultChecked={values.visible} />
         Visible sur le site
       </label>
+
+      <label className="adm-check">
+        <input type="checkbox" name="isUsImport" defaultChecked={values.isUsImport} />
+        Import USA
+      </label>
+      <p className="adm-hint">À cocher pour un produit réellement importé des États-Unis : il apparaîtra sur la page « Produits américains ».</p>
       </div>
 
       <div className="adm-product__photo">

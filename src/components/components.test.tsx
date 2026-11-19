@@ -14,7 +14,7 @@ import { ServicesSection } from "./ServicesSection";
 import { SiteFooter } from "./SiteFooter";
 import { SocialIconRow } from "./SocialIconRow";
 
-const baseProduct: Product = { id: "x", title: "Produit test", categoryId: null, priceInCents: null };
+const baseProduct: Product = { id: "x", title: "Produit test", categoryId: null, priceInCents: null, isUsImport: false };
 
 describe("CallButton", () => {
   it("affiche un bouton désactivé « numéro à venir » tant qu'aucun numéro n'est fourni", () => {

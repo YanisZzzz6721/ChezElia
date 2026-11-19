@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   parseCategoryForm,
+  parseCategoryIntroForm,
   parseFaqEditForm,
   parseFaqForm,
   parseHoursForm,
@@ -22,7 +23,13 @@ const UUID = "11111111-1111-4111-8111-111111111111";
 describe("parseProductForm", () => {
   it("accepte un produit sans prix (Prix à confirmer) ni catégorie", () => {
     const result = parseProductForm(form({ title: "  Fanta  ", categoryId: "", description: "", price: "" }));
-    expect(result).toEqual({ ok: true, data: { title: "Fanta", categoryId: null, description: null, priceCents: null, visible: false } });
+    expect(result).toEqual({ ok: true, data: { title: "Fanta", categoryId: null, description: null, priceCents: null, visible: false, isUsImport: false } });
+  });
+
+  it("lit la case « Import USA » (cochée = vrai, absente = faux)", () => {
+    expect(parseProductForm(form({ title: "Takis", price: "", isUsImport: "on" }))).toMatchObject({ ok: true, data: { isUsImport: true } });
+    expect(parseProductForm(form({ title: "Takis", price: "" }))).toMatchObject({ ok: true, data: { isUsImport: false } });
+    expect(parseProductForm(form({ title: "Takis", price: "", isUsImport: "oui" }))).toMatchObject({ ok: true, data: { isUsImport: false } });
   });
 
   it("distingue prix 0 et prix absent, et lit la visibilité cochée", () => {
@@ -51,6 +58,28 @@ describe("parseCategoryForm", () => {
   it("rejette un nom vide ou trop long", () => {
     expect(parseCategoryForm(form({ name: "  " }))).toMatchObject({ ok: false });
     expect(parseCategoryForm(form({ name: "x".repeat(61) }))).toMatchObject({ ok: false });
+  });
+});
+
+describe("parseCategoryIntroForm", () => {
+  it("accepte un texte et le nettoie", () => {
+    expect(parseCategoryIntroForm(form({ id: UUID, seoIntro: "  Un rayon.\nDeux phrases.  " }))).toEqual({ ok: true, data: { id: UUID, seoIntro: "Un rayon.\nDeux phrases." } });
+  });
+
+  it("un texte vide ou blanc devient null (page du rayon invisible pour Google)", () => {
+    expect(parseCategoryIntroForm(form({ id: UUID, seoIntro: "" }))).toEqual({ ok: true, data: { id: UUID, seoIntro: null } });
+    expect(parseCategoryIntroForm(form({ id: UUID, seoIntro: "   \n  " }))).toEqual({ ok: true, data: { id: UUID, seoIntro: null } });
+    expect(parseCategoryIntroForm(form({ id: UUID }))).toEqual({ ok: true, data: { id: UUID, seoIntro: null } });
+  });
+
+  it("accepte exactement 1200 caractères et refuse 1201", () => {
+    expect(parseCategoryIntroForm(form({ id: UUID, seoIntro: "a".repeat(1200) }))).toMatchObject({ ok: true });
+    expect(parseCategoryIntroForm(form({ id: UUID, seoIntro: "a".repeat(1201) }))).toMatchObject({ ok: false, error: expect.stringMatching(/1200/) });
+  });
+
+  it("refuse un identifiant de catégorie invalide ou absent", () => {
+    expect(parseCategoryIntroForm(form({ id: "pas-un-uuid", seoIntro: "x" }))).toMatchObject({ ok: false, error: expect.stringMatching(/catégorie/i) });
+    expect(parseCategoryIntroForm(new FormData())).toMatchObject({ ok: false });
   });
 });
 

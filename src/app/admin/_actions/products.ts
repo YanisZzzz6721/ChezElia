@@ -3,19 +3,21 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin/auth";
+import { revalidateCataloguePages } from "@/lib/admin/revalidatePublic";
 import { readPhotoFile, removePhoto, uploadPhoto, type StoredPhoto } from "@/lib/admin/photoStorage";
 import { redirectWithFlash, toActionError, type ActionResult } from "@/lib/admin/result";
 import { parseProductForm, parseQuickEditForm } from "@/lib/adminForms";
 
 const idSchema = z.string().uuid("Identifiant de produit invalide.");
 
+/** Rafraîchit le site public (accueil, pages de rayon, produits américains) et la liste d'admin. */
 function refreshPages(): void {
-  revalidatePath("/");
+  revalidateCataloguePages();
   revalidatePath("/admin/produits");
 }
 
 /**
- * Quoi : crée ou modifie un produit (titre, catégorie, description, prix facultatif, visibilité, photo).
+ * Quoi : crée ou modifie un produit (titre, catégorie, description, prix facultatif, visibilité, « Import USA », photo).
  * Input : _previous — état précédent (useActionState) ; formData — champs du formulaire + id (si modification)
  *   + photo (fichier) + removePhoto (case cochée).
  * Output : null avant tentative ; { ok: false, error } si la saisie ou l'envoi échoue. En cas de succès, redirige
@@ -57,6 +59,7 @@ export async function saveProductAction(_previous: ActionResult, formData: FormD
       description: input.data.description,
       price_cents: input.data.priceCents,
       visible: input.data.visible,
+      is_us_import: input.data.isUsImport,
       ...photoColumns,
     };
 

@@ -3,7 +3,7 @@ const MAX_SEARCH_LENGTH = 60;
 const MAX_PAGE = 10_000;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export type StateFilter = "all" | "no-price" | "hidden" | "visible";
+export type StateFilter = "all" | "no-price" | "hidden" | "visible" | "us-import";
 export type ListView = "active" | "trash";
 
 export interface ProductListQuery {
@@ -18,6 +18,7 @@ const STATE_BY_PARAM: Record<string, StateFilter> = {
   "sans-prix": "no-price",
   masques: "hidden",
   visibles: "visible",
+  "import-usa": "us-import",
 };
 
 /**

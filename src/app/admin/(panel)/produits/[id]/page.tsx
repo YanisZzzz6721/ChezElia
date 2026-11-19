@@ -10,7 +10,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
 
   const { supabase } = await requireAdmin();
   const [productResult, categoriesResult] = await Promise.all([
-    supabase.from("products").select("id, title, category_id, description, price_cents, photo_path, visible, deleted_at").eq("id", id).maybeSingle(),
+    supabase.from("products").select("id, title, category_id, description, price_cents, photo_path, visible, deleted_at, is_us_import").eq("id", id).maybeSingle(),
     supabase.from("categories").select("id, name").order("position"),
   ]);
   if (productResult.error) throw new Error(`Lecture du produit impossible : ${productResult.error.message}`);
@@ -32,6 +32,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           description: product.description ?? "",
           price: centsToPriceInput(product.price_cents),
           visible: product.visible,
+          isUsImport: product.is_us_import,
           photoUrl,
         }}
       />

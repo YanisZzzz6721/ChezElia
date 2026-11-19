@@ -13,7 +13,7 @@ Document technique, sans donnée commerciale ni secret. Pour les procédures d'e
 
 | Dossier | Rôle |
 |---|---|
-| `src/app/` | pages publiques (`page.tsx`, mentions légales, confidentialité), `robots.ts`, `sitemap.ts`, `opengraph-image.tsx` |
+| `src/app/` | pages publiques (`page.tsx`, `rayons/`, `produits-americains/`, mentions légales, confidentialité), `robots.ts`, `sitemap.ts`, `opengraph-image.tsx` |
 | `src/app/admin/` | panneau d'administration : `login/`, `(panel)/` (pages protégées), `_actions/` (Server Actions) |
 | `src/proxy.ts` | remplace le « middleware » (Next 16) : redirige vers la connexion sans session |
 | `src/components/` | composants du site ; `admin/` pour ceux du panneau (`ActionForm`, `QuickEditForm`, `AdminNav`, `ProductForm`…) |
@@ -27,7 +27,7 @@ Document technique, sans donnée commerciale ni secret. Pour les procédures d'e
 
 ## Modèle de données (résumé)
 
-- `categories`, `products` (`price_cents` **NULL = « Prix à confirmer »**, jamais 0), `site_settings` (clés autorisées uniquement : `tag`, `lead`, `phone_number`, `hero_photo`, `social_instagram`, `social_tiktok`, `social_snapchat`), `opening_hours`, `faq_items` (questions fréquentes, éditables dans l'admin), `services` (cartes de la section « Nos services » : titre, texte, mention, icône parmi une liste fermée, visibilité, ordre), `audit_log`.
+- `categories` (+ `slug` : adresse publique stable du rayon, unique, jamais modifiée par un renommage ; `seo_intro` : texte de présentation rédigé par les propriétaires, NULL = page non indexable), `products` (`price_cents` **NULL = « Prix à confirmer »**, jamais 0 ; `is_us_import` : case « Import USA »), `site_settings` (clés autorisées uniquement : `tag`, `lead`, `phone_number`, `hero_photo`, `social_instagram`, `social_tiktok`, `social_snapchat`), `opening_hours`, `faq_items` (questions fréquentes, éditables dans l'admin), `services` (cartes de la section « Nos services » : titre, texte, mention, icône parmi une liste fermée, visibilité, ordre), `audit_log`.
 - Un produit peut être **visible**, **masqué** ou à la **corbeille** (suppression douce).
 - Droits : lecture publique des fiches visibles ; écriture réservée à `public.is_admin()` (rôle `admin` dans `app_metadata` du jeton). Une policy de lecture existe pour `anon` **et** `authenticated`.
 
@@ -45,6 +45,20 @@ L'application n'utilise que la clé **publique** Supabase. La clé secrète ne s
 - La mention de santé sur l'alcool (`ALCOHOL_NOTICE`) ne s'affiche que dans l'onglet de la catégorie alcool (`isAlcoholCategorySelected`).
 - Une fiche sans photo affiche « Photo à venir » ; une fiche sans prix affiche « Prix à confirmer ».
 - Les photos des fiches sont affichées dans un cadre 4:5 (`b-card__pic--photo`), jamais en débordement.
+
+## Pages de rayon et produits américains (données)
+
+- Lecture : `fetchCategoryPageData(slug)` (catégorie + produits visibles, `null` si slug inconnu) et `fetchUsImportProducts()` dans `src/lib/siteQueries.ts` ; `fetchSiteData()` expose `slug`/`seoIntro` (catégories) et `isUsImport` (produits).
+- Le slug est fabriqué par `src/lib/categorySlug.ts` (même règle que la migration), unique par suffixe `-2`… ; un déclencheur SQL en donne un aux catégories créées sans slug (scripts, démonstration).
+- Après toute modification du catalogue, `revalidateCataloguePages()` (`src/lib/admin/revalidatePublic.ts`) invalide `/`, `/rayons` (toutes les pages de rayon) et `/produits-americains`.
+
+## Pages publiques de rayon
+
+- Routes : `/rayons` (liste des rayons non vides), `/rayons/<slug>` et `/produits-americains` (produits « Import USA », **alcools toujours exclus**). ISR `revalidate = 60`, `generateStaticParams` depuis les catégories, `notFound()` si le slug est inconnu.
+- Gabarit : `InnerPageShell` (en-tête `SiteHeader` partagé avec le hero, `<main>`, `StoreAccessBlock`, pied de page) et `ShelfPage` (fil d'Ariane, H1 « <Nom> à Strasbourg », présentation, grille de `ProductCard`). Le rayon des alcools affiche toujours `ALCOHOL_NOTICE` avant la grille.
+- Texte de présentation : `seoIntro` rédigé par les propriétaires, sinon une phrase neutre et vraie (`buildShelfIntroParagraphs`). Aucun texte n'est inventé.
+- Règle anti-contenu mince (`src/lib/shelfPages.ts`) : un rayon n'est **indexable** que s'il a un `seoIntro` non vide ET au moins 6 produits visibles ; `/produits-americains` : au moins 6 produits ; `/rayons` : au moins un rayon indexable. Sinon `robots: { index: false, follow: true }` ; la page reste visible des visiteurs. Site fermé : ni index ni follow (`buildPageRobots`).
+- Maillage : lien « Voir le rayon X » et « Produits américains » sous le catalogue (`CatalogueLinks`), ligne « Nos rayons » dans le pied de page (accueil et pages de rayon). Données structurées : `BreadcrumbList` seulement (pas de Product/Offer), omis si le domaine est inconnu.
 
 ## Services et réseaux sociaux
 

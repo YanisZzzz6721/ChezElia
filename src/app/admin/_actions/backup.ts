@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/admin/auth";
+import { revalidateCataloguePages } from "@/lib/admin/revalidatePublic";
 import { toActionError, type ActionResult } from "@/lib/admin/result";
 import { parseBackup, type BackupFile } from "@/lib/backup";
 
@@ -30,7 +31,7 @@ async function findMissingPhotos(supabase: Awaited<ReturnType<typeof requireAdmi
 }
 
 /**
- * Quoi : restaure les fiches d'un fichier de sauvegarde (catégories, produits, réglages, horaires, FAQ, services, réseaux sociaux).
+ * Quoi : restaure les fiches d'un fichier de sauvegarde (catégories avec adresse et texte de présentation de leur page, produits avec « Import USA », réglages, horaires, FAQ, services, réseaux sociaux).
  *   Les éléments créés après la sauvegarde ne sont PAS supprimés ; ceux de la sauvegarde retrouvent leur état d'alors.
  * Input : _previous — état précédent (useActionState) ; formData — backup (fichier JSON) et confirmation (mot « RESTAURER »).
  * Output : { ok: true, message } (avec les photos manquantes éventuelles) ou { ok: false, error } ; rien n'est écrit si le fichier est invalide.
@@ -69,7 +70,7 @@ export async function restoreBackupAction(_previous: ActionResult, formData: For
       if (error) throw new Error(`Restauration des ${label} : ${error.message}`);
     }
     const missing = await findMissingPhotos(supabase, backup);
-    revalidatePath("/");
+    revalidateCataloguePages();
     revalidatePath("/admin", "layout");
     const base = `Sauvegarde du ${new Date(backup.exportedAt).toLocaleDateString("fr-FR")} restaurée (${backup.products.length} produits, ${backup.categories.length} catégories, ${backup.services.length} services).`;
     return { ok: true, message: missing.length > 0 ? `${base} Attention : ${missing.length} photo(s) n'existent plus dans le stockage et s'afficheront comme « Photo à venir ».` : base };

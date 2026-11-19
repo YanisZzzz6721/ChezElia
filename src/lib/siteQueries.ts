@@ -4,8 +4,12 @@ import type { DayHours } from "@/content/hours";
 import type { Category, Product } from "@/content/products";
 import type { ServiceItem } from "@/content/services";
 import { SOCIAL_NETWORKS, type SocialLink, type SocialNetworkName } from "@/content/social";
+import { isValidCategorySlug } from "@/lib/categorySlug";
 import { createPublicClient } from "@/lib/supabase/publicClient";
 import {
+  CATEGORY_COLUMNS,
+  PRODUCT_COLUMNS,
+  mapCategoryRow,
   mapCategoryRows,
   mapFaqRows,
   mapHoursRows,
@@ -56,8 +60,8 @@ export async function fetchSiteData(): Promise<SiteData> {
   const [settingRows, hourRows, categoryRows, productRows, faqRows, serviceRows] = await Promise.all([
     supabase.from("site_settings").select("key, value"),
     supabase.from("opening_hours").select("day_index, is_closed, opens_at, closes_at"),
-    supabase.from("categories").select("id, name, position"),
-    supabase.from("products").select("id, category_id, title, description, price_cents, photo_path, photo_width, photo_height, visible, deleted_at").order("created_at", { ascending: true }),
+    supabase.from("categories").select(CATEGORY_COLUMNS),
+    supabase.from("products").select(PRODUCT_COLUMNS).order("created_at", { ascending: true }),
     supabase.from("faq_items").select("id, question, answer, position"),
     supabase.from("services").select(SERVICE_COLUMNS).eq("visible", true),
   ]);
@@ -74,6 +78,60 @@ export async function fetchSiteData(): Promise<SiteData> {
     products: unwrapRows<ProductRow>("products", productRows).map((row) => mapProductRow(row, buildPhotoUrl)),
     heroPhotoUrl: settings.heroPhoto ? buildPhotoUrl(settings.heroPhoto.path) : null,
   };
+}
+
+/** Page d'un rayon : la catégorie et ses produits visibles. */
+export interface CategoryPageData {
+  category: Category;
+  /** Produits visibles (ni masqués ni à la corbeille) de ce rayon, du plus ancien au plus récent ; liste vide possible. */
+  products: Product[];
+}
+
+/**
+ * Quoi : charge la page publique d'un rayon (/rayons/<slug>) : la catégorie et ses produits visibles.
+ * Input : slug — adresse du rayon telle qu'elle vient de l'URL (donnée externe : le format est vérifié avant toute lecture).
+ * Output : CategoryPageData, ou null si le slug est invalide ou ne correspond à aucune catégorie (l'appelant répond alors 404).
+ *   category.seoIntro est null tant que les propriétaires n'ont pas rédigé le texte.
+ * Effets de bord : 0 lecture si le format est invalide, sinon 2 lectures Supabase (anonymes). Lève une Error explicite si une lecture échoue.
+ */
+export async function fetchCategoryPageData(slug: string): Promise<CategoryPageData | null> {
+  if (!isValidCategorySlug(slug)) return null;
+  const supabase = createPublicClient();
+  const categoryResult = await supabase.from("categories").select(CATEGORY_COLUMNS).eq("slug", slug).maybeSingle<CategoryRow>();
+  if (categoryResult.error) throw new Error(`Lecture de la catégorie « ${slug} » impossible : ${categoryResult.error.message}`);
+  if (categoryResult.data === null) return null;
+
+  const category = mapCategoryRow(categoryResult.data);
+  const productsResult = await supabase
+    .from("products")
+    .select(PRODUCT_COLUMNS)
+    .eq("category_id", category.id)
+    .eq("visible", true)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: true });
+  const buildPhotoUrl = (path: string) => supabase.storage.from("photos").getPublicUrl(path).data.publicUrl;
+  const rows = unwrapRows<ProductRow>("products", productsResult as { data: ProductRow[] | null; error: { message: string } | null });
+  return { category, products: rows.map((row) => mapProductRow(row, buildPhotoUrl)) };
+}
+
+/**
+ * Quoi : charge les produits visibles marqués « Import USA » (page /produits-americains).
+ * Input : aucun.
+ * Output : les produits visibles (ni masqués ni à la corbeille) dont isUsImport est vrai, du plus ancien au plus récent ; liste vide si aucun.
+ * Effets de bord : 1 lecture Supabase (anonyme). Lève une Error explicite si la lecture échoue.
+ */
+export async function fetchUsImportProducts(): Promise<Product[]> {
+  const supabase = createPublicClient();
+  const result = await supabase
+    .from("products")
+    .select(PRODUCT_COLUMNS)
+    .eq("is_us_import", true)
+    .eq("visible", true)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: true });
+  const buildPhotoUrl = (path: string) => supabase.storage.from("photos").getPublicUrl(path).data.publicUrl;
+  const rows = unwrapRows<ProductRow>("products", result as { data: ProductRow[] | null; error: { message: string } | null });
+  return rows.map((row) => mapProductRow(row, buildPhotoUrl));
 }
 
 /**

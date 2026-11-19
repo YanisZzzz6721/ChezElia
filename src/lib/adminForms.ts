@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CATEGORY_SEO_INTRO_MAX_LENGTH } from "@/content/products";
 import { FAQ_ANSWER_MAX_LENGTH, FAQ_QUESTION_MAX_LENGTH } from "@/content/faq";
 import { SERVICE_BODY_MAX_LENGTH, SERVICE_HIGHLIGHT_MAX_LENGTH, SERVICE_ICONS, SERVICE_TITLE_MAX_LENGTH, type ServiceIconName } from "@/content/services";
 import { SOCIAL_NETWORKS, parseSocialUrl, type SocialNetworkName } from "@/content/social";
@@ -15,6 +16,8 @@ export interface ProductInput {
   /** null = « Prix à confirmer ». */
   priceCents: number | null;
   visible: boolean;
+  /** Produit importé des États-Unis (case « Import USA »). */
+  isUsImport: boolean;
 }
 
 export interface SettingsInput {
@@ -60,9 +63,9 @@ const productTextSchema = z.object({
 
 /**
  * Quoi : lit et valide le formulaire d'un produit.
- * Input : formData — champs title, categoryId, description, price, visible (case cochée = « on »).
+ * Input : formData — champs title, categoryId, description, price, visible et isUsImport (cases cochées = « on »).
  * Output : { ok: true, data } avec titre nettoyé, catégorie (null si aucune), description (null si vide),
- *   prix en centimes (null si champ vide = « Prix à confirmer ») et visibilité ; sinon { ok: false, error } lisible.
+ *   prix en centimes (null si champ vide = « Prix à confirmer »), visibilité et « Import USA » ; sinon { ok: false, error } lisible.
  * Effets de bord : aucun (fonction pure).
  */
 export function parseProductForm(formData: FormData): ParseResult<ProductInput> {
@@ -81,6 +84,7 @@ export function parseProductForm(formData: FormData): ParseResult<ProductInput> 
       description: text.data.description === "" ? null : text.data.description,
       priceCents: parsePriceInput(readText(formData, "price")),
       visible: formData.get("visible") === "on",
+      isUsImport: formData.get("isUsImport") === "on",
     },
   }));
 }
@@ -96,6 +100,29 @@ const categoryNameSchema = z.string().trim().min(1, "Le nom de la catégorie est
 export function parseCategoryForm(formData: FormData): ParseResult<{ name: string }> {
   const name = categoryNameSchema.safeParse(readText(formData, "name"));
   return name.success ? { ok: true, data: { name: name.data } } : { ok: false, error: firstIssue(name.error) };
+}
+
+export interface CategoryIntroInput {
+  id: string;
+  /** null = texte non rédigé (la page du rayon reste invisible pour Google). */
+  seoIntro: string | null;
+}
+
+const categoryIntroSchema = z.object({
+  id: z.string().uuid("Identifiant de catégorie invalide."),
+  seoIntro: z.string().trim().max(CATEGORY_SEO_INTRO_MAX_LENGTH, `Le texte de présentation est trop long (${CATEGORY_SEO_INTRO_MAX_LENGTH} caractères maximum).`),
+});
+
+/**
+ * Quoi : lit et valide le texte de présentation d'un rayon (page Google).
+ * Input : formData — champs id (catégorie) et seoIntro (les retours à la ligne sont conservés).
+ * Output : { ok: true, data: { id, seoIntro } } avec le texte nettoyé (null si vide ou blanc) ; sinon { ok: false, error } lisible.
+ * Effets de bord : aucun (fonction pure).
+ */
+export function parseCategoryIntroForm(formData: FormData): ParseResult<CategoryIntroInput> {
+  const parsed = categoryIntroSchema.safeParse({ id: readText(formData, "id"), seoIntro: readText(formData, "seoIntro") });
+  if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
+  return { ok: true, data: { id: parsed.data.id, seoIntro: parsed.data.seoIntro === "" ? null : parsed.data.seoIntro } };
 }
 
 const settingsTextSchema = z.object({

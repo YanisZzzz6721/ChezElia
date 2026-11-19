@@ -14,11 +14,19 @@ import { SOCIAL_NETWORKS, parseSocialUrl, type SocialLink } from "@/content/soci
 
 export const DAY_NAMES = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"] as const;
 
+/** Colonnes lues dans la table `categories` (une seule liste pour le site, l'admin et l'export). */
+export const CATEGORY_COLUMNS = "id, name, position, slug, seo_intro";
+
 export interface CategoryRow {
   id: string;
   name: string;
   position: number;
+  slug: string;
+  seo_intro: string | null;
 }
+
+/** Colonnes lues dans la table `products` pour le site public et l'export. */
+export const PRODUCT_COLUMNS = "id, category_id, title, description, price_cents, photo_path, photo_width, photo_height, visible, deleted_at, is_us_import";
 
 export interface FaqRow {
   id: string;
@@ -52,6 +60,7 @@ export interface ProductRow {
   photo_height: number | null;
   visible: boolean;
   deleted_at: string | null;
+  is_us_import: boolean;
 }
 
 export interface HoursRow {
@@ -97,11 +106,22 @@ export const DEFAULT_SETTINGS: SiteSettings = {
 /**
  * Quoi : transforme les lignes « catégories » de la base en catégories du site, triées par position.
  * Input : rows — lignes de la table categories.
- * Output : les catégories {id, label} dans l'ordre d'affichage.
+ * Output : les catégories {id, label, slug, seoIntro} dans l'ordre d'affichage ; un texte de présentation vide ou blanc devient null.
  * Effets de bord : aucun (fonction pure).
  */
 export function mapCategoryRows(rows: readonly CategoryRow[]): Category[] {
-  return [...rows].sort((a, b) => a.position - b.position).map((row) => ({ id: row.id, label: row.name }));
+  return [...rows].sort((a, b) => a.position - b.position).map(mapCategoryRow);
+}
+
+/**
+ * Quoi : transforme UNE ligne « catégorie » de la base en catégorie du site.
+ * Input : row — ligne de la table categories.
+ * Output : la catégorie {id, label, slug, seoIntro} ; seoIntro est null si le texte est absent ou ne contient que des espaces.
+ * Effets de bord : aucun (fonction pure).
+ */
+export function mapCategoryRow(row: CategoryRow): Category {
+  const seoIntro = row.seo_intro?.trim() ?? "";
+  return { id: row.id, label: row.name, slug: row.slug, seoIntro: seoIntro === "" ? null : seoIntro };
 }
 
 /**
@@ -185,7 +205,7 @@ export function mapSocialLinks(rows: readonly SettingRow[], reportInvalid: (sett
 /**
  * Quoi : transforme une ligne « produit » de la base en produit du site.
  * Input : row — ligne de la table products ; buildPhotoUrl — fabrique l'URL publique d'un chemin de photo.
- * Output : le produit ; le prix NULL reste null (« Prix à confirmer »), 0 reste 0.
+ * Output : le produit ; le prix NULL reste null (« Prix à confirmer »), 0 reste 0 ; isUsImport reprend la case « Import USA ».
  * Effets de bord : aucun (fonction pure).
  */
 export function mapProductRow(row: ProductRow, buildPhotoUrl: (path: string) => string): Product {
@@ -196,6 +216,7 @@ export function mapProductRow(row: ProductRow, buildPhotoUrl: (path: string) => 
     categoryId: row.category_id,
     ...(row.description ? { description: row.description } : {}),
     priceInCents: row.price_cents,
+    isUsImport: row.is_us_import,
     ...(hasPhoto
       ? { photo: { url: buildPhotoUrl(row.photo_path as string), width: row.photo_width as number, height: row.photo_height as number } }
       : {}),

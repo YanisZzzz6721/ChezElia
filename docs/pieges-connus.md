@@ -38,6 +38,8 @@ Erreurs déjà rencontrées sur ce projet, avec la règle qui en découle. Docum
 | `site_settings.value NOT NULL` refusait de vider un réglage. | Colonne nullable (vide = valeur absente). |
 | Page demandée hors des bornes : PostgREST répond 416. | La page demandée est ramenée dans les bornes avant la requête. |
 | Restauration d'une sauvegarde : valeurs de réglages non validées. | Schéma zod discriminé par clé de réglage. |
+| Un `check (char_length(btrim(texte)) >= 1)` laissait passer un texte réduit à des retours à la ligne : `btrim()` ne retire que les espaces. Vu par le test RLS de `seo_intro`. | Pour exiger au moins un caractère visible, utiliser `texte ~ '\S'`. |
+| Une colonne `NOT NULL` sans valeur par défaut (`categories.slug`) aurait cassé les scripts d'import et `seed.sql`, qui insèrent des catégories sans elle. | Déclencheur `categories_fill_slug` : une catégorie créée sans slug en reçoit un. |
 | Les photos de produits portant le même nom de fichier dans deux dossiers créaient des doublons de titres. | La catégorie fait partie du titre à l'import. |
 
 ## Interface et React

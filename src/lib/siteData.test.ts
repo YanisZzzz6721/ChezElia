@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_SETTINGS,
+  mapCategoryRow,
   mapCategoryRows,
   mapFaqRows,
   mapHoursRows,
@@ -16,7 +17,7 @@ import {
 const toUrl = (path: string) => `https://cdn.test/${path}`;
 const baseRow: ProductRow = {
   id: "p1", category_id: null, title: "Fanta", description: null, price_cents: null,
-  photo_path: null, photo_width: null, photo_height: null, visible: true, deleted_at: null,
+  photo_path: null, photo_width: null, photo_height: null, visible: true, deleted_at: null, is_us_import: false,
 };
 
 describe("mapProductRow", () => {
@@ -37,10 +38,29 @@ describe("mapProductRow", () => {
   });
 });
 
+describe("mapProductRow : Import USA", () => {
+  it("reprend la case « Import USA » de la base", () => {
+    expect(mapProductRow(baseRow, toUrl).isUsImport).toBe(false);
+    expect(mapProductRow({ ...baseRow, is_us_import: true }, toUrl).isUsImport).toBe(true);
+  });
+});
+
 describe("mapCategoryRows", () => {
+  const categoryRow = { id: "a", name: "Épicerie", position: 1, slug: "epicerie", seo_intro: null };
+
   it("trie par position", () => {
-    const rows = [{ id: "b", name: "B", position: 2 }, { id: "a", name: "A", position: 1 }];
+    const rows = [{ ...categoryRow, id: "b", position: 2 }, categoryRow];
     expect(mapCategoryRows(rows).map((c) => c.id)).toEqual(["a", "b"]);
+  });
+
+  it("expose le slug et le texte de présentation", () => {
+    expect(mapCategoryRow({ ...categoryRow, seo_intro: "Texte du rayon." })).toEqual({ id: "a", label: "Épicerie", slug: "epicerie", seoIntro: "Texte du rayon." });
+  });
+
+  it("laisse seoIntro à null quand le texte est absent, vide ou blanc (page invisible pour Google)", () => {
+    expect(mapCategoryRow(categoryRow).seoIntro).toBeNull();
+    expect(mapCategoryRow({ ...categoryRow, seo_intro: "" }).seoIntro).toBeNull();
+    expect(mapCategoryRow({ ...categoryRow, seo_intro: "  \n " }).seoIntro).toBeNull();
   });
 
   it("accepte une liste vide", () => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { DayHours } from "@/content/hours";
-import { buildStoreJsonLd, serializeJsonLd, toSchemaTime } from "./structuredData";
+import { SITE } from "@/content/site";
+import { buildStoreJsonLd, buildWebSiteJsonLd, serializeJsonLd, toSchemaTime } from "./structuredData";
 import { SAMPLE_HOURS } from "./testFixtures";
 
 describe("toSchemaTime", () => {
@@ -68,6 +69,57 @@ describe("buildStoreJsonLd", () => {
 
   it("accepte une liste vide (aucun jour d'ouverture)", () => {
     expect(buildStoreJsonLd([]).openingHoursSpecification).toEqual([]);
+  });
+});
+
+describe("buildStoreJsonLd : identité, description, carte et zone desservie", () => {
+  const siteUrl = "https://chez-elia.fr";
+
+  it("ajoute @id seulement quand l'adresse du site est connue", () => {
+    expect(buildStoreJsonLd(SAMPLE_HOURS, null, { siteUrl })).toMatchObject({ "@id": "https://chez-elia.fr/#commerce" });
+    expect(buildStoreJsonLd(SAMPLE_HOURS)).not.toHaveProperty("@id");
+    expect(buildStoreJsonLd(SAMPLE_HOURS, null, { siteUrl: null })).not.toHaveProperty("@id");
+  });
+
+  it("ajoute la description fournie, et seulement elle", () => {
+    expect(buildStoreJsonLd(SAMPLE_HOURS, null, { description: "Une description." })).toMatchObject({ description: "Une description." });
+    expect(buildStoreJsonLd(SAMPLE_HOURS)).not.toHaveProperty("description");
+    expect(buildStoreJsonLd(SAMPLE_HOURS, null, { description: "" })).not.toHaveProperty("description");
+  });
+
+  it("pointe hasMap vers l'itinéraire Google Maps du site, sans coordonnées inventées", () => {
+    const jsonLd = buildStoreJsonLd(SAMPLE_HOURS);
+    expect(jsonLd.hasMap).toBe(SITE.directionsUrl);
+    expect(jsonLd.hasMap).toMatch(/^https:\/\/www\.google\.com\/maps\//);
+    expect(jsonLd).not.toHaveProperty("geo");
+  });
+
+  it("déclare Strasbourg comme zone desservie", () => {
+    expect(buildStoreJsonLd(SAMPLE_HOURS).areaServed).toEqual({ "@type": "City", name: "Strasbourg" });
+  });
+
+  it("n'invente ni priceRange ni FAQPage", () => {
+    expect(buildStoreJsonLd(SAMPLE_HOURS, null, { siteUrl })).not.toHaveProperty("priceRange");
+    expect(JSON.stringify(buildStoreJsonLd(SAMPLE_HOURS, null, { siteUrl }))).not.toContain("FAQPage");
+  });
+});
+
+describe("buildWebSiteJsonLd", () => {
+  it("décrit le site et renvoie au commerce comme éditeur quand l'adresse est connue", () => {
+    expect(buildWebSiteJsonLd("https://chez-elia.fr")).toEqual({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://chez-elia.fr/#site",
+      url: "https://chez-elia.fr",
+      name: "Chez Elia",
+      inLanguage: "fr-FR",
+      publisher: { "@id": "https://chez-elia.fr/#commerce" },
+    });
+  });
+
+  it("renvoie null sans adresse du site (rien n'est inventé)", () => {
+    expect(buildWebSiteJsonLd(null)).toBeNull();
+    expect(buildWebSiteJsonLd("")).toBeNull();
   });
 });
 

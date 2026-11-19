@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/admin/auth";
 import { buildBackup, type BackupData } from "@/lib/backup";
-import { SERVICE_COLUMNS } from "@/lib/siteData";
+import { CATEGORY_COLUMNS, PRODUCT_COLUMNS, SERVICE_COLUMNS } from "@/lib/siteData";
 
 /**
  * Quoi : fournit la sauvegarde complète en téléchargement (JSON).
@@ -11,8 +11,8 @@ import { SERVICE_COLUMNS } from "@/lib/siteData";
 export async function GET(): Promise<Response> {
   const { supabase } = await requireAdmin();
   const [categories, products, settings, hours, faq, services] = await Promise.all([
-    supabase.from("categories").select("id, name, position").order("position"),
-    supabase.from("products").select("id, category_id, title, description, price_cents, photo_path, photo_width, photo_height, visible, deleted_at").order("created_at"),
+    supabase.from("categories").select(CATEGORY_COLUMNS).order("position"),
+    supabase.from("products").select(PRODUCT_COLUMNS).order("created_at"),
     supabase.from("site_settings").select("key, value"),
     supabase.from("opening_hours").select("day_index, is_closed, opens_at, closes_at").order("day_index"),
     supabase.from("faq_items").select("id, question, answer, position").order("position"),
